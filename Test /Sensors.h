@@ -12,16 +12,20 @@ struct calib_data
 class eeprom
 {
 public:
-    int check_data_inequality(calib_data old, calib_data new)
+    int check_data_inequality(calib_data Old, calib_data New)
     {
-        if ((old.Min == new.Min) && (old.Min == new.Min))
+        for(int i=0;i<8;i++)
         {
-            return 0;
-        }
-        return 1;
+          if ((Old.Min[i] != New.Min[i]) || (Old.Min[i] != New.Min[i]))
+          {
+              return 1;
+          }
+          return 0;
+         }
     }
     calib_data read(int address)
     {
+        calib_data temp_obj;
         EEPROM.get(address, temp_obj);
         return temp_obj;
     }
@@ -42,7 +46,7 @@ public:
     {
         pinMode(12, INPUT);
         pinMode(13, OUTPUT);
-        Serial.begin(38400);
+        //Serial.begin(38400);
         if (digitalRead(12) == HIGH)
         {
             Serial.println("\nCallibrating");
