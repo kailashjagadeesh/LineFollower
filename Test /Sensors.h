@@ -15,20 +15,18 @@ public:
     int check_data_inequality(calib_data Old, calib_data New)
     {
         for(int i=0;i<8;i++)
-        {
-          if ((Old.Min[i] != New.Min[i]) || (Old.Min[i] != New.Min[i]))
-          {
-              return 1;
-          }
-          return 0;
-         }
+          if ((Old.Min[i] != New.Min[i]) || (Old.Max[i] != New.Max[i]))
+            return 1;
+         return 0;
     }
+
     calib_data read(int address)
     {
         calib_data temp_obj;
         EEPROM.get(address, temp_obj);
         return temp_obj;
     }
+    
     void write(int address, calib_data data)
     {
         if (check_data_inequality(read(address), data))
