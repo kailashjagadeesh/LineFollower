@@ -1,7 +1,7 @@
 #include <QTRSensors.h>
 #include "QTRSensorsAnalog.h"
 
-QTRSensorsAnalog::QTRSensorsAnalog(const uint8_t* pins, uint8_t numSensors, uint8_t emitterPin, uint16_t timeout):QTRSensors() {
+QTRSensorsAnalog::QTRSensorsAnalog(const uint8_t* pins, uint8_t numSensors, uint16_t timeout = TIMEOUT):QTRSensors() {
     setTypeAnalog();
     setSensorPins(pins, numSensors);
     //setEmitterPin(emitterPin);

@@ -1,12 +1,12 @@
-#include <QTRSensorsAnalog.h>
+#include "QTRSensorsAnalog.h"
 #include <EEPROM.h>
 
 #define NUM_SENSORS 8                  // number of sensors used
-#define TIMEOUT 4                      // waits for 2500 us for sensor outputs to go low
+
 #define EMITTER_PIN QTR_NO_EMITTER_PIN // emitter is not controlled
 #define database_address_calibration 0
 
-QTRSensorsAnalog qtra((unsigned char[]){0, 1, 2, 3, 4, 5, 6, 7}, NUM_SENSORS, TIMEOUT, EMITTER_PIN);
+QTRSensorsAnalog qtra((unsigned char[]){0, 1, 2, 3, 4, 5, 6, 7}, NUM_SENSORS, TIMEOUT);
 
 struct calib_data
 {
@@ -57,8 +57,8 @@ void calibrate_sensor()
 
         for (int i = 0; i < 8; i++)
         {
-            cal.Min[i] = qtra.calibratedMinimumOn[i];
-            cal.Max[i] = qtra.calibratedMaximumOn[i];
+            cal.Min[i] = qtra.calibrationOn.minimum[i];
+            cal.Max[i] = qtra.calibrationOn.maximum[i];
         }
         database.write(database_address_calibration, cal);
         delay(50);
@@ -72,17 +72,15 @@ void calibrate_sensor()
         for (int i = 0; i < 8; i++)
         {
             Serial.print(cal.Min[i]);
-            Serial.print('\t');
-            qtra.calibratedMinimumOn[i] = cal.Min[i];
+            Serial.println('\t');
+            qtra.calibrationOn.minimum[i] = cal.Min[i];
         }
-        Serial.println();
         for (int i = 0; i < 8; i++)
         {
             Serial.print(cal.Max[i]);
-            Serial.print('\t');
-            qtra.calibratedMaximumOn[i] = cal.Max[i];
+            Serial.println('\t');
+            qtra.calibrationOn.maximum[i] = cal.Max[i];
         }
-        Serial.println();
     }
     digitalWrite(13, HIGH);
 }
