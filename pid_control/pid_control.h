@@ -1,5 +1,5 @@
-#ifndef PID_CONTROL
-#define PID_CONTROL
+#ifndef PID_CONTROL_H
+#define PID_CONTROL_H
 
 class PIDControl {
     float kp, kd, ki;
