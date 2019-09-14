@@ -1,6 +1,8 @@
 #ifndef PID_CONTROL_H
 #define PID_CONTROL_H
 
+#include <stdint.h>
+
 class PIDControl {
     float kp, kd, ki;
     uint16_t& currentValue;
