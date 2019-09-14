@@ -1,6 +1,6 @@
 #include "pid_control.h"
 
-PIDControl::PIDControl(uint16_t& _currentValue, uint16_t& _targetValue, float _kp, float _kd, float _ki):currentValue(_currentValue), targetValue(_targetValue){
+void PIDControl::setup(uint16_t& _currentValue, uint16_t& _targetValue, float _kp, float _kd, float _ki):currentValue(_currentValue), targetValue(_targetValue){
     kp = _kp;
     kd = _kd;
     ki = _ki;

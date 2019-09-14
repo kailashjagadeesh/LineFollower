@@ -8,7 +8,7 @@ class PIDControl {
     int16_t errorSum, lastError;
 
     public:
-    PIDControl (uint16_t& _currentValue, uint16_t& _targetValue, float _kp, float _kd, float _ki);
+    void setup(uint16_t& _currentValue, uint16_t& _targetValue, float _kp, float _kd, float _ki);
     int16_t control();
     
 };
