@@ -4,7 +4,7 @@
 class PIDControl {
     float kp, kd, ki;
     uint16_t& currentValue;
-    uint16_t& targetValue;
+    uint16_t targetValue;
     int16_t errorSum, lastError;
 
     public:
