@@ -4,8 +4,8 @@
 QTRSensorsAnalog::QTRSensorsAnalog(const uint8_t* pins, uint8_t numSensors, uint8_t emitterPin, uint16_t timeout):QTRSensors() {
     setTypeAnalog();
     setSensorPins(pins, numSensors);
-    setEmitterPin(emitterPin);
-    setTimeout(timeout);
+    //setEmitterPin(emitterPin);
+    //setTimeout(timeout);
 }
 
 uint16_t  QTRSensorsAnalog::readLine(uint16_t* sensorValues) {
