@@ -117,12 +117,12 @@ void dry_180()
     //called when all sensors are out of track
     //robot moves forward for 200ms
 
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     //and takes a right 90 turn
     while (!(sensors[0] <= hsavg[0]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, 150);
         analogWrite(BE, 150);
         digitalWrite(A1, LOW);
@@ -130,13 +130,13 @@ void dry_180()
         digitalWrite(B1, HIGH);
         digitalWrite(B2, LOW);
     }
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
 
     //and takes a right 90 turn
     while (!(sensors[2] <= hsavg[2] && sensors[3] <= hsavg[3]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, 130);
         analogWrite(BE, 130);
         digitalWrite(A1, LOW);
@@ -160,12 +160,12 @@ void dry_left_90()
     //called when rightmost sensor is in the track and leftmost is out of track
     //robot moves forward for 200ms
 
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     //and takes a right 90 turn
     while (!(sensors[7] <= hsavg[7]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, turnspeed);
         analogWrite(BE, turnspeed);
         digitalWrite(A1, HIGH);
@@ -173,11 +173,11 @@ void dry_left_90()
         digitalWrite(B1, LOW);
         digitalWrite(B2, HIGH);
     }
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     while (!((sensors[5] <= hsavg[5]) && (sensors[6] <= hsavg[6])))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, 130);
         analogWrite(BE, 130);
         digitalWrite(A1, HIGH);
@@ -200,12 +200,12 @@ void dry_right_90()
     //called when rightmost sensor is in the track and leftmost is out of track
     //robot moves forward for 200ms
 
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     //and takes a right 90 turn
     while (!(sensors[0] <= hsavg[0]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, turnspeed);
         analogWrite(BE, turnspeed);
         digitalWrite(A1, LOW);
@@ -213,12 +213,12 @@ void dry_right_90()
         digitalWrite(B1, HIGH);
         digitalWrite(B2, LOW);
     }
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     //and takes a right 90 turn
     while (!(sensors[2] <= hsavg[2] && sensors[1] <= hsavg[1]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, turnslowspeed);
         analogWrite(BE, turnslowspeed);
         digitalWrite(A1, LOW);
@@ -244,7 +244,7 @@ void dry_pid()
     while (1)
     {
 
-        position = qtra.readLine(sensors, QTR_EMITTERS_ON, 1); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
+        position = qtra.readLine(sensors); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
         error = position - 3500;
         // Serial.println(er);
         sum += error;
@@ -294,19 +294,19 @@ void actual_180()
     digitalWrite(B2, LOW);
 
     delay(50);
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
 
     analogWrite(AE, 0);
     analogWrite(BE, 0);
     delay(80);
     //and takes a right 180 turn
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     //and takes a right 90 turn
 
     while (!(sensors[0] <= hsavg[0]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, 160);
         analogWrite(BE, 160);
         digitalWrite(B1, HIGH);
@@ -314,12 +314,12 @@ void actual_180()
         digitalWrite(A1, LOW);
         digitalWrite(A2, HIGH);
     }
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
 
     while (!(sensors[2] <= hsavg[2] && sensors[1] <= hsavg[1]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, 130);
         analogWrite(BE, 130);
         digitalWrite(B1, HIGH);
@@ -344,12 +344,12 @@ void actual_left_90()
 
     //robot moves forward for 200ms
 
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     //and takes a right 90 turn
     while (!(sensors[7] <= hsavg[7]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, turnspeed);
         analogWrite(BE, turnspeed);
         digitalWrite(A1, HIGH);
@@ -357,11 +357,11 @@ void actual_left_90()
         digitalWrite(B1, LOW);
         digitalWrite(B2, HIGH);
     }
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     while (!((sensors[5] <= hsavg[5]) && (sensors[6] <= hsavg[6])))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, 130);
         analogWrite(BE, 130);
         digitalWrite(A1, HIGH);
@@ -385,12 +385,12 @@ void actual_right_90()
     //called when rightmost sensor is in the track and leftmost is out of track
     //robot moves forward for 200ms
 
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     //and takes a right 90 turn
     while (!(sensors[0] <= hsavg[0]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, turnspeed);
         analogWrite(BE, turnspeed);
         digitalWrite(A1, LOW);
@@ -398,12 +398,12 @@ void actual_right_90()
         digitalWrite(B1, HIGH);
         digitalWrite(B2, LOW);
     }
-    qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+    qtra.readLine(sensors);
     //and takes a right 90 turn
     while (!(sensors[1] <= hsavg[1] && sensors[2] <= hsavg[2]))
     {
         //checking rightmost sensors reach black again
-        qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        qtra.readLine(sensors);
         analogWrite(AE, turnslowspeed);
         analogWrite(BE, turnslowspeed);
         digitalWrite(A1, LOW);
@@ -429,7 +429,7 @@ void actual_pid()
     Serial.print(" ");*/
     while (1)
     {
-        position = qtra.readLine(sensors, QTR_EMITTERS_ON, 1); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
+        position = qtra.readLine(sensors); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
         error = position - 3500;
         // Serial.println(er);
         sum += error;
@@ -488,7 +488,7 @@ void follow()
         unsigned char found_right = 0;
 
         // Now read the sensors and check the intersection type.
-        position = qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        position = qtra.readLine(sensors);
 
         // Check for left and right exits.
         if (sensors[0] < 200)
@@ -508,7 +508,7 @@ void follow()
         analogWrite(AE, 0);
         analogWrite(BE, 0);
         delay(50);
-        position = qtra.readLine(sensors, QTR_EMITTERS_ON, 1);
+        position = qtra.readLine(sensors);
         if (sensors[1] < 200 || sensors[2] < 200 || sensors[3] < 200 || sensors[4] < 200 || sensors[5] < 200 || sensors[6] < 200)
             found_straight = 1;
         unsigned char dir = select_turn(found_left, found_straight, found_right);
@@ -666,7 +666,7 @@ char *simplify_path(char path[], char choice)
 
 void solve()
 {
-    position = qtra.readLine(sensors, QTR_EMITTERS_ON, 1); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
+    position = qtra.readLine(sensors); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
     error = position - 3500;
     for (int i = 0; i < strlen(path); i++)
     {
