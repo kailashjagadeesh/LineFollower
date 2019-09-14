@@ -1,6 +1,6 @@
 #include "pid_control.h"
 
-void PIDControl::setup(uint16_t& _currentValue, uint16_t& _targetValue, float _kp, float _kd, float _ki):currentValue(_currentValue), targetValue(_targetValue){
+PIDControl::PIDControl(uint16_t& _currentValue, uint16_t _targetValue, float _kp, float _kd, float _ki):currentValue(_currentValue){
     kp = _kp;
     kd = _kd;
     ki = _ki;
@@ -18,4 +18,9 @@ int16_t PIDControl::control() {
 
     lastError = error;
     return c;
+}
+
+void PIDControl::clear() {
+    errorSum = 0;
+    lastError = 0;
 }
