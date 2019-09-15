@@ -1,6 +1,8 @@
-#include <Sensors.h>
+
+#include "Sensors.h"
 #include <SoftwareSerial.h>
 
+SoftwareSerial bluetooth(12, 11);
 #define Kp 0.33 // experiment to determine this, start by something small that just makes your bot follow the line at a slow speed
 #define Kd 2.47 // experiment to determine this, slowly increase the speeds and adjust this value. ( Note: Kp0.06 < Kd1.97)
 #define Ki 0
@@ -46,6 +48,7 @@ long int t1 = 0, t2;
 void initialize_pins()
 {
     Serial.begin(38400);
+    bluetooth.begin(9600);
     //motor driver pins
     pinMode(A1, OUTPUT);
     pinMode(A2, OUTPUT);
@@ -67,13 +70,67 @@ void initialize_pins()
     digitalWrite(B1, HIGH);
     digitalWrite(B2, LOW);
 }
+int user_input_calibvalues()
+{
+    int input_given = 0, time = 0;
+    while (!input_given)
+    {
+        if (digitalRead(3) == 0)
+        {
+            time = millis();
+            while (digitalRead(3) == 0)
+                ;
+            
+            time=millis()-time;
+        bluetooth.println(time);
+        if (time >= 2000)
+        {
+            bluetooth.println("Long press, EEPROM values used");
+            input_given = 1;
+            return 0;
+        }
+        else
+        {
+            bluetooth.println("Short press, preparing to calibrate");
+            input_given = 1;
+            return 1;
+        }
+        }
+        
+    }
+}
+void sensors_calibrate()
+{
+    if (user_input_calibvalues())
+    {
+        bluetooth.write("Calibrating");
+        calibrate_sensor();
+        bluetooth.write("Done Calibrating");
+    }
+    else
+    {
+        cal = database.read(database_address_calibration);
+        for (int i = 0; i < 8; i++)
+        {
+            Serial.print(cal.Min[i]);
+            Serial.println('\t');
+            qtra.calibrationOn.minimum[i] = cal.Min[i];
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            Serial.print(cal.Max[i]);
+            Serial.println('\t');
+            qtra.calibrationOn.maximum[i] = cal.Max[i];
+        }
+    }
+}
 void setup()
 {
     initialize_pins();
+    delay(100);
     // callibrating the sensors
-    calibrate_sensor();
+    sensors_calibrate();
 }
-
 void loop()
 {
     //Detecting switch press
@@ -425,8 +482,7 @@ void actual_right_90()
 void actual_pid()
 {
     //PID condition
-    /*Serial.print(++t);
-    Serial.print(" ");*/
+
     while (1)
     {
         position = qtra.readLine(sensors); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
@@ -492,9 +548,15 @@ void follow()
 
         // Check for left and right exits.
         if (sensors[0] < 200)
+        {
+            bluetooth.write("Right\n");
             found_right = 1;
+        }
         if (sensors[7] < 200)
+        {
+            bluetooth.write("Left\n");
             found_left = 1;
+        }
 
         // Drive straight a bit more - this is enough to line up our
         // wheels with the inte
@@ -510,11 +572,14 @@ void follow()
         delay(50);
         position = qtra.readLine(sensors);
         if (sensors[1] < 200 || sensors[2] < 200 || sensors[3] < 200 || sensors[4] < 200 || sensors[5] < 200 || sensors[6] < 200)
+        {
             found_straight = 1;
+        }
         unsigned char dir = select_turn(found_left, found_straight, found_right);
         if (dir == 'R')
         {
             Serial.println("R90");
+            bluetooth.write("R90");
             path[path_index++] = 'R';
             dry_right_90();
         }
@@ -528,6 +593,7 @@ void follow()
         {
             Serial.println("L90");
             path[path_index++] = 'L';
+            bluetooth.write("L90");
             dry_left_90();
         }
         else if (dir == 'S')
@@ -686,6 +752,8 @@ void solve()
         if (path[i] == 'R')
         {
             actual_right_90();
+            f = 1;
+            delay(500);
             Serial.println("R90");
         }
         else if (path[i] == 'L')
