@@ -80,23 +80,21 @@ int user_input_calibvalues()
             time = millis();
             while (digitalRead(3) == 0)
                 ;
-            
-            time=millis()-time;
-        bluetooth.println(time);
-        if (time >= 2000)
-        {
-            bluetooth.println("Long press, EEPROM values used");
-            input_given = 1;
-            return 0;
+
+            time = millis() - time;
+            if (time >= 2000)
+            {
+                bluetooth.println("Long press, EEPROM values used");
+                input_given = 0;
+                return 0;
+            }
+            else
+            {
+                bluetooth.println("Short press, preparing to calibrate");
+                input_given = 1;
+                return 1;
+            }
         }
-        else
-        {
-            bluetooth.println("Short press, preparing to calibrate");
-            input_given = 1;
-            return 1;
-        }
-        }
-        
     }
 }
 void sensors_calibrate()
@@ -131,6 +129,17 @@ void setup()
     // callibrating the sensors
     sensors_calibrate();
 }
+/*void loop()
+{
+    int pos =  qtra.readLine(sensors);
+    for(int i=0;i<8;i++)
+    {
+        bluetooth.print((String)sensors[i]);
+        bluetooth.write(",");
+    }
+    bluetooth.println((String)pos);
+    delay(200);
+}*/
 void loop()
 {
     //Detecting switch press
@@ -547,12 +556,12 @@ void follow()
         position = qtra.readLine(sensors);
 
         // Check for left and right exits.
-        if (sensors[0] < 200)
+        if (position <= 2000 && position >=1300)
         {
-            bluetooth.write("Right\n");
+            bluetooth.write("Right\n"); 
             found_right = 1;
         }
-        if (sensors[7] < 200)
+        if (position <= 5700 && position >=4600)
         {
             bluetooth.write("Left\n");
             found_left = 1;
