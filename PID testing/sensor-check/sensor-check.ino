@@ -3,6 +3,7 @@
 #include "motor_control.h"
 #include <SoftwareSerial.h>
 
+#define PID_IDEAL 3500
 #define SENSOR_PINS \
     (const uint8_t[]) { A0, A1, A2, A3, A4, A5, A6, A7 }
 #define NUM_SENSORS 8
@@ -22,7 +23,7 @@ SoftwareSerial bluetooth(12, 11);
 QTRSensorsAnalog qtr(SENSOR_PINS, NUM_SENSORS);
 uint16_t sensorValues[NUM_SENSORS];
 uint16_t line;
-PIDControl pid(line, 3500, KP, KD, KI);
+PIDControl pid(PID_IDEAL, KP, KD, KI);
 Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS,MOTOR_STANDBY_PIN);
 
 void setup()
@@ -30,10 +31,10 @@ void setup()
     bluetooth.begin(9600);
     Serial.begin(115200);
 
-    pinMode(13, OUTPUT);
+    pinMode(2, OUTPUT);
 
     //callibration
-    digitalWrite(13, HIGH);
+    digitalWrite(2, HIGH);
     Serial.println("Calibrating");
     bluetooth.println("Calibrating");
     for (int i = 0; i < 400; i++)
@@ -42,23 +43,23 @@ void setup()
     }
     Serial.println("Done calib");
     bluetooth.println("Done calib");
-    digitalWrite(13, LOW);
+    digitalWrite(2, LOW);
 }
 
 void loop()
 {
     line = qtr.readLine(sensorValues);
-
-    int16_t correction = pid.control();
+    //bluetooth.println(line);
+    int16_t correction = pid.control((int)line);
     if (correction > 0)
     {
-        motor.setLeftSpeed(1024);
-        motor.setRightSpeed(1024 - correction);
+        motor.setLeftSpeed(122);
+        motor.setRightSpeed(122 - correction);
     }
     else
     {
-        motor.setLeftSpeed(1024 + correction);
-        motor.setRightSpeed(1024);
+        motor.setLeftSpeed(122 + correction);
+        motor.setRightSpeed(122);
     }
     motor.setLeftDirection(Motor::Front);
     motor.setRightDirection(Motor::Front);
