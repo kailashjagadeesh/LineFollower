@@ -11,6 +11,7 @@
 #define KD 0
 #define KI 0
 
+SoftwareSerial bluetooth(12, 11);
 #define MOTOR_RIGHT_PINS \
     (const uint8_t[]) { 7, 8, 10 }
 #define MOTOR_LEFT_PINS \
@@ -24,17 +25,22 @@ Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS);
 
 void setup()
 {
-    Serial.begin(9600);
+    bluetooth.begin(9600);
+    Serial.begin(115200);
 
     pinMode(13, OUTPUT);
 
     //callibration
     digitalWrite(13, HIGH);
+    Serial.println("Calibrating");
+    bluetooth.println("Calibrating");
     for (int i = 0; i < 400; i++)
     {
         qtr.calibrate();
     }
-    pinMode(13, LOW);
+    Serial.println("Done calib");
+    bluetooth.println("Done calib");
+    digitalWrite(13, LOW);
 }
 
 void loop()
@@ -54,8 +60,8 @@ void loop()
     }
     motor.setLeftDirection(Motor::Front);
     motor.setRightDirection(Motor::Front);
-
     Serial.println(correction);
+    bluetooth.println(correction);
 
     delay(200);
 }

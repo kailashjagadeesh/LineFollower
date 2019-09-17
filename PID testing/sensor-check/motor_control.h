@@ -30,13 +30,13 @@ Motor::Motor(const uint8_t pinLeft[], const uint8_t pinRight[])
     pinRightBack = pinRight[1];
     pinRightSpeed = pinRight[2];
 
-    pinMode(pinLeftFront, 1);
-    pinMode(pinLeftBack, 1);
-    pinMode(pinLeftSpeed, 1);
+    pinMode(pinLeftFront, OUTPUT);
+    pinMode(pinLeftBack, OUTPUT);
+    pinMode(pinLeftSpeed, OUTPUT);
 
-    pinMode(pinRightFront, 1);
-    pinMode(pinRightBack, 1);
-    pinMode(pinRightSpeed, 1);
+    pinMode(pinRightFront, OUTPUT);
+    pinMode(pinRightBack, OUTPUT);
+    pinMode(pinRightSpeed, OUTPUT);
 }
 
 void Motor::setLeftDirection(Direction dir)

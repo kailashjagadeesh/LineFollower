@@ -1,4 +1,4 @@
-#include <QTRSensors.h>
+#include "QTRSensorsAnalog.h"
 #include<SoftwareSerial.h>
 #include<EEPROM.h>
 
@@ -14,7 +14,7 @@
 
 #define NUM_SENSORS  8      // number of sensors used
 #define TIMEOUT       4   // waits for 2500 us for sensor outputs to go low
-#define EMITTER_PIN   QTR_NO_EMITTER_PIN    // emitter is not controlled
+  // emitter is not controlled
 #define turnslowspeed  135
 #define turnspeed     160
 
@@ -28,7 +28,7 @@
 
 #define STBY 4
 
-QTRSensorsAnalog qtra((unsigned char[]) {  0, 1, 2, 3, 4, 5, 6, 7} ,NUM_SENSORS, TIMEOUT, EMITTER_PIN);
+QTRSensorsAnalog qtra((unsigned char[]) {  0, 1, 2, 3, 4, 5, 6, 7} ,NUM_SENSORS);
 
 int f2=0;
 int lastError;
@@ -121,8 +121,8 @@ void Calibrate() {
       }
 
       for (int i = 0; i < 8; i++){
-        cal.Min[i] = qtra.calibratedMinimumOn[i];
-        cal.Max[i] = qtra.calibratedMaximumOn[i];
+        cal.Min[i] = calibrationOn.minimum[i];
+        cal.Max[i] = calibrationOn.maximum[i];
       }
        EEPROM.put(0, cal);
        delay(50);
@@ -134,14 +134,14 @@ void Calibrate() {
     EEPROM.get(0, cal);
     for(int i = 0; i<8; i++){
       Serial.print(cal.Min[i]); 
-      Serial.print('\t');
-      qtra.calibratedMinimumOn[i] = cal.Min[i];
+      Serial.print('\t'); 
+      calibrationOn.minimum[i] = cal.Min[i];
     }
     Serial.println();
     for(int i = 0; i<8; i++){
       Serial.print(cal.Max[i]); 
       Serial.print('\t');
-      qtra.calibratedMaximumOn[i] = cal.Max[i];
+      calibrationOn.maximum[i] = cal.Max[i];
     }
     Serial.println();
   }
@@ -676,4 +676,3 @@ void solve(){
     }
   }
 }
-
