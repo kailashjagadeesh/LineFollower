@@ -4,6 +4,7 @@ class Motor
 {
     uint8_t pinLeftFront, pinLeftBack, pinLeftSpeed;
     uint8_t pinRightFront, pinRightBack, pinRightSpeed;
+    uint8_t pinStandby;
 
 public:
     enum Direction
@@ -12,7 +13,7 @@ public:
         Back
     };
 
-    Motor(const uint8_t pinLeft[], const uint8_t pinRight[]);
+    Motor(const uint8_t pinLeft[], const uint8_t pinRight[], const uint8_t pinStby);
     void setLeftDirection(Direction);
     void setRightDirection(Direction);
 
@@ -20,7 +21,7 @@ public:
     void setRightSpeed(uint8_t);
 };
 
-Motor::Motor(const uint8_t pinLeft[], const uint8_t pinRight[])
+Motor::Motor(const uint8_t pinLeft[], const uint8_t pinRight[], const uint8_t pinStby)
 {
     pinLeftFront = pinLeft[0];
     pinLeftBack = pinLeft[1];
@@ -30,6 +31,8 @@ Motor::Motor(const uint8_t pinLeft[], const uint8_t pinRight[])
     pinRightBack = pinRight[1];
     pinRightSpeed = pinRight[2];
 
+    pinStandby = pinStby;
+
     pinMode(pinLeftFront, OUTPUT);
     pinMode(pinLeftBack, OUTPUT);
     pinMode(pinLeftSpeed, OUTPUT);
@@ -37,6 +40,9 @@ Motor::Motor(const uint8_t pinLeft[], const uint8_t pinRight[])
     pinMode(pinRightFront, OUTPUT);
     pinMode(pinRightBack, OUTPUT);
     pinMode(pinRightSpeed, OUTPUT);
+
+    pinMode(pinStandby, OUTPUT);
+    digitalWrite(pinStandby, HIGH); // Disable standby pin
 }
 
 void Motor::setLeftDirection(Direction dir)

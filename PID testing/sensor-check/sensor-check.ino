@@ -16,12 +16,14 @@ SoftwareSerial bluetooth(12, 11);
     (const uint8_t[]) { 7, 8, 10 }
 #define MOTOR_LEFT_PINS \
     (const uint8_t[]) { 5, 6, 9 }
+#define MOTOR_STANDBY_PIN \
+    (const uint8_t) 4
 
 QTRSensorsAnalog qtr(SENSOR_PINS, NUM_SENSORS);
 uint16_t sensorValues[NUM_SENSORS];
 uint16_t line;
 PIDControl pid(line, 3500, KP, KD, KI);
-Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS);
+Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS,MOTOR_STANDBY_PIN);
 
 void setup()
 {
