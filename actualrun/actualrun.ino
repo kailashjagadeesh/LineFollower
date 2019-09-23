@@ -27,7 +27,7 @@
 #define STBY 4
 
 SoftwareSerial mySerial(12, 11); // RX, TX
-QTRSensorsAnalog qtra((unsigned char[]) {  0, 1, 2, 3, 4, 5, 6, 7} ,NUM_SENSORS, TIMEOUT, EMITTER_PIN);
+QTRSensors qtra;
 
 int f2=0;
 int lastError;
@@ -40,7 +40,7 @@ int n=0;
 char path[]="SSLLSRRSSRLRRLLR" ;
 int position,error;
 void setup() {
-  mySerial.begin(38400);  
+  mySerial.begin(9600);  
   
   pinMode(A1,OUTPUT);
   pinMode(A2,OUTPUT);
@@ -55,6 +55,8 @@ void setup() {
   pinMode(3,INPUT);
   
   pinMode(STBY,OUTPUT);
+  qtra.setTypeAnalog();
+  qtra.setSensorPins((const uint8_t[]){0, 1, 2, 3, 4, 5,6,7}, NUM_SENSORS);
   
   digitalWrite(STBY,HIGH);
   digitalWrite(A1,HIGH);
@@ -71,13 +73,13 @@ void setup() {
   digitalWrite(13,HIGH);
   
   for (int i = 0; i < NUM_SENSORS; i++){
-    mySerial.print(qtra.calibratedMinimumOn[i]);
+    mySerial.print(qtra.calibrationOn.minimum[i]);
     mySerial.print(' ');
     //savg[i]=(qtra.calibratedMinimumOn[i]+qtra.calibratedMaximumOn[i])/2;
   }
   mySerial.println();
   for (int i = 0; i < NUM_SENSORS; i++){
-    mySerial.print(qtra.calibratedMaximumOn[i]);
+    mySerial.print(qtra.calibrationOn.maximum[i]);
     mySerial.print(' ');
   }
   mySerial.println();
@@ -129,19 +131,19 @@ void _180()
   digitalWrite(B2,LOW);
 
   delay(50);
-  qtra.readLine(sensors);
+  qtra.readLineWhite(sensors);
  
   analogWrite(AE, 0);
   analogWrite(BE, 0);
   delay(80);
   //and takes a right 180 turn
-  qtra.readLine(sensors);
+  qtra.readLineWhite(sensors);
   //and takes a right 90 turn
   
   while(!(sensors[0]>=hsavg[0] ))
   { 
     //checking rightmost sensors reach black again
-    qtra.readLine(sensors);
+    qtra.readLineWhite(sensors);
     analogWrite(AE, 160);
     analogWrite(BE, 160);
     digitalWrite(B1,HIGH);
@@ -149,12 +151,12 @@ void _180()
     digitalWrite(A1,LOW);
     digitalWrite(A2,HIGH);
   }
-qtra.readLine(sensors);
+qtra.readLineWhite(sensors);
 
   while(!(sensors[2]>=hsavg[2] && sensors[1]>=hsavg[1]))
   { 
     //checking rightmost sensors reach black again
-    qtra.readLine(sensors);
+    qtra.readLineWhite(sensors);
     analogWrite(AE, 130);
     analogWrite(BE, 130);
     digitalWrite(B1,HIGH);
@@ -178,11 +180,11 @@ void left_90(){
   
   //robot moves forward for 200ms 
 
-  qtra.readLine(sensors);
+  qtra.readLineWhite(sensors);
   //and takes a right 90 turn
   while(!(sensors[7]>=hsavg[7])){ 
     //checking rightmost sensors reach black again
-    qtra.readLine(sensors);
+    qtra.readLineWhite(sensors);
     analogWrite(AE, turnspeed);
     analogWrite(BE, turnspeed);
     digitalWrite(A1,HIGH);
@@ -190,11 +192,11 @@ void left_90(){
     digitalWrite(B1,LOW);
     digitalWrite(B2,HIGH);
   }
-  qtra.readLine(sensors);
+  qtra.readLineWhite(sensors);
   while(!((sensors[3]>=hsavg[3])&&(sensors[4]>=hsavg[4])))
   { 
     //checking rightmost sensors reach black again
-    qtra.readLine(sensors);
+    qtra.readLineWhite(sensors);
     analogWrite(AE, 130);
     analogWrite(BE, 130);
     digitalWrite(A1,HIGH);
@@ -216,11 +218,11 @@ void right_90(){
   //called when rightmost sensor is in the track and leftmost is out of track
   //robot moves forward for 200ms 
 
-  qtra.readLine(sensors);
+  qtra.readLineWhite(sensors);
   //and takes a right 90 turn
   while(!(sensors[0]>=hsavg[0]&&sensors[1]>=hsavg[1] )){ 
     //checking rightmost sensors reach black again
-    qtra.readLine(sensors);
+    qtra.readLineWhite(sensors);
     analogWrite(AE, turnspeed);
     analogWrite(BE, turnspeed);
     digitalWrite(A1,LOW);
@@ -228,11 +230,11 @@ void right_90(){
     digitalWrite(B1,HIGH);
     digitalWrite(B2,LOW);
   }
-  qtra.readLine(sensors);
+  qtra.readLineWhite(sensors);
   //and takes a right 90 turn
   while(!(sensors[3]>=hsavg[3] && sensors[4]>=hsavg[4])){ 
     //checking rightmost sensors reach black again
-    qtra.readLine(sensors);
+    qtra.readLineWhite(sensors);
     analogWrite(AE, turnslowspeed);
     analogWrite(BE, turnslowspeed);
     digitalWrite(A1,LOW);
@@ -257,7 +259,7 @@ void pid()
     mySerial.print(" ");*/
     while(1)
     {  
-    position = qtra.readLine(sensors); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
+    position = qtra.readLineWhite(sensors); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
     error = position-3500;
    // mySerial.println(er);
     sum+=error;
@@ -291,7 +293,7 @@ void pid()
 
 void solve()
 {
-   position = qtra.readLine(sensors); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
+   position = qtra.readLineWhite(sensors); // get calibrated readings along with the line position, refer to the QTR Sensors Arduino Library for more details on line position.
    error = position-3500;
   for(int i=0;i<16;i++)
     {
@@ -324,4 +326,3 @@ void solve()
    }
 
 }
-

@@ -1,15 +1,17 @@
 #include "pid_control.h"
 
+#define convFactor 3.0f
+
 PIDControl::PIDControl(uint16_t _targetValue)
 {
-    targetValue = _targetValue;
+    targetValue = _targetValue/convFactor;
 
     errorSum = 0;
     lastError = 0;
 
-    kp = &parameters[0];
-    kd = &parameters[1];
-    ki = &parameters[2];
+    kp = parameters;
+    kd = parameters + 1;
+    ki = parameters + 2;
 
     parameters[0] = 0.00;
     parameters[1] = 0.00;
@@ -17,30 +19,22 @@ PIDControl::PIDControl(uint16_t _targetValue)
 
     dp[0] = 1.00;
     dp[1] = 1.00;
-    dp[2] = 1.00;
+    dp[2] = 0.00;
 }
 
 int16_t PIDControl::control(int16_t currentValue)
 {
     int16_t c; //correction
-    int16_t error = currentValue - targetValue;
+    float error = currentValue/convFactor - targetValue;
     errorSum += error;
 
     c = (*kp) * error + (*kd) * (error - lastError) + (*ki) * errorSum;
-
     lastError = error;
     return c;
 }
-uint16_t PIDControl::PIDcontrol_error(int16_t currentValue)
+float PIDControl::getError(int16_t currentValue)
 {
-    int16_t c; //correction
-    uint16_t error = abs(currentValue - targetValue);
-    errorSum += error;
-
-    c = (*kp) * error + (*kd) * (error - lastError) + (*ki) * errorSum;
-
-    lastError = error;
-    return error;
+    return currentValue/convFactor - targetValue;
 }
 void PIDControl::clear()
 {
