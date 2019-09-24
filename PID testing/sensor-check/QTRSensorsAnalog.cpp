@@ -8,7 +8,7 @@ QTRSensorsAnalog::QTRSensorsAnalog(const uint8_t* pins, uint8_t numSensors):QTRS
 }
 
 uint16_t  QTRSensorsAnalog::readLine(uint16_t* sensorValues) {
-#ifndef LF_BLACKLINE_LOGIC
+#ifdef LF_BLACKLINE_LOGIC
     return readLineBlack(sensorValues);
 #else
     return readLineWhite(sensorValues);

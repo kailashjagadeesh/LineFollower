@@ -1,6 +1,6 @@
 #include "pid_control.h"
 
-#define convFactor 3.0f
+#define convFactor 10.0f
 
 PIDControl::PIDControl(uint16_t _targetValue)
 {
@@ -13,9 +13,10 @@ PIDControl::PIDControl(uint16_t _targetValue)
     kd = parameters + 1;
     ki = parameters + 2;
 
-    parameters[0] = 0.00;
-    parameters[1] = 0.00;
+    parameters[0] = 0.33;
+    parameters[1] = 2.47;
     parameters[2] = 0.00;
+    
 
     dp[0] = 1.00;
     dp[1] = 1.00;
