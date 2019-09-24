@@ -22,19 +22,25 @@ SoftwareSerial bluetooth(12, 11);
 QTRSensorsAnalog qtr(SENSOR_PINS, NUM_SENSORS);
 uint16_t sensorValues[NUM_SENSORS], thresholdValues[NUM_SENSORS], thresholdValues2[NUM_SENSORS];
 uint16_t line;
+uint8_t sensors;
 PIDControl pid(PID_IDEAL);
 Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS, MOTOR_STANDBY_PIN);
 
-enum Junction {
-    T, R, L, X
+enum Junction
+{
+    T,
+    R,
+    L,
+    X,
+    RS,
+    LS
 };
 
-char juncs[] = "TRLX";
-
+char juncs[] = "TRLXtrl";
 
 void PID_tune() // Auto tune implemented using twiddle algorithm
 {
-    bluetooth.println("PID tuning...");
+    //bluetooth.println("PID tuning...");
     float best_err = abs(pid.getError(qtr.readLine(sensorValues)));
     float err;
 
@@ -71,13 +77,13 @@ void PID_tune() // Auto tune implemented using twiddle algorithm
         sum = (pid.dp[0] + pid.dp[1] + pid.dp[2]);
     }
 
-    bluetooth.println("Done PID tuning");
-    bluetooth.println("kp: ");
-    bluetooth.println(*pid.kp);
-    bluetooth.println("kd: ");
-    bluetooth.println(*pid.kd);
-    bluetooth.println("ki: ");
-    bluetooth.println(*pid.ki);
+    //bluetooth.println("Done PID tuning");
+    //bluetooth.println("kp: ");
+    //bluetooth.println(*pid.kp);
+    //bluetooth.println("kd: ");
+    //bluetooth.println(*pid.kd);
+    //bluetooth.println("ki: ");
+    //bluetooth.println(*pid.ki);
 }
 
 void setup()
@@ -88,36 +94,35 @@ void setup()
 
     //callibration
     digitalWrite(2, HIGH);
-    bluetooth.println("Calibrating");
+    //bluetooth.println("Calibrating");
     for (int i = 0; i < 400; i++)
     {
         qtr.calibrate();
     }
     qtr.generateThreshold(thresholdValues, thresholdValues2);
-    bluetooth.println("Done calib");
-    bluetooth.println("thresholdValues");
-    for (int i = 0; i < NUM_SENSORS;i++) {
-        bluetooth.print(thresholdValues[i]);
-        bluetooth.print(" ");
+    //bluetooth.println("Done calib");
+    //bluetooth.println("thresholdValues");
+    for (int i = 0; i < NUM_SENSORS; i++)
+    {
+        //bluetooth.print(thresholdValues[i]);
+        //bluetooth.print(" ");
     }
-    bluetooth.println();
-    for (int i = 0; i < NUM_SENSORS;i++) {
-        bluetooth.print(thresholdValues2[i]);
-        bluetooth.print(" ");
+    //bluetooth.println();
+    for (int i = 0; i < NUM_SENSORS; i++)
+    {
+        //bluetooth.print(thresholdValues2[i]);
+        //bluetooth.print(" ");
     }
-    bluetooth.println();
+    //bluetooth.println();
     //PID_tune();
     digitalWrite(2, LOW);
 }
 unsigned int follow()
 {
-    line = qtr.readLine(sensorValues);
-
-    junctionDetect();
 
     int16_t correction = pid.control((int)line);
 
-    bluetooth.println(correction);
+    //bluetooth.println(correction);
     int16_t newSpeed = baseSpeed;
     newSpeed -= abs(correction);
     if (newSpeed < 0)
@@ -142,43 +147,117 @@ unsigned int follow()
 
 void loop()
 {
-    //follow();
     qtr.readLine(sensorValues);
+    sensors = sensorValuesInBinary();
     junctionDetect();
+    follow();
 }
 
-void junctionDetect () {
-uint8_t sensors = 0;
+uint8_t sensorValuesInBinary()
+{
+    uint8_t sensors = 0;
 #ifdef LF_WHITELINE_LOGIC
-    for (int i = 0; i < 8; i++) {
-        if (sensorValues[i] < thresholdValues2[i]) {
+    for (int i = 0; i < 8; i++)
+    {
+        if (sensorValues[i] < thresholdValues2[i])
+        {
             sensors |= (1 << (7 - i));
         }
     }
 #else
-    for (int i = 0; i < 8; i++) {
-        if (sensorValues[i] > thresholdValues2[i]) {
+    for (int i = 0; i < 8; i++)
+    {
+        if (sensorValues[i] > thresholdValues2[i])
+        {
             sensors |= (1 << (7 - i));
         }
     }
 #endif
+    return sensors;
+}
+void junctionDetect()
+{
+    int j;
 
-    if (sensors == 255) {
-        junctionControl (T);
-    }
-    else if(sensors >= 0b11110000)
+    if (sensors == 255)
     {
-        junctionControl(L);
+        j = T;
     }
-    else if (sensors & 0b00001111 == 0b00001111) 
+    else if (sensors >= 0b11110000)
     {
-        junctionControl(R);
+        j = L;
     }
-    else {
-        bluetooth.println("straight");
+    else if (sensors & 0b00001111 == 0b00001111)
+    {
+        j = R;
     }
+    else
+    {
+        return;
+    }
+
+    motor.setLeftDirection(Motor::Front);
+    motor.setRightDirection(Motor::Front);
+    motor.setLeftSpeed(100);
+    motor.setRightSpeed(100);
+    delay(500);
+
+    qtr.readLine(sensorValues);
+    sensors = sensorValuesInBinary();
+    
+    if (sensors < 0b11000000 && sensors > 0b00000011){
+        j += 3;
+    }
+
+    junctionControl(j);
 }
 
-void junctionControl(Junction J) {
+void junctionControl(Junction J)
+{
     bluetooth.println(juncs[J]);
+    uint8_t sensors;
+    switch (J)
+    {
+    case L:
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setLeftSpeed(0);
+            motor.setRightDirection(Motor::Front);
+            motor.setRightSpeed(100);
+
+            bluetooth.println("left");
+        } while (!(sensors < 0b11000000 && sensors > 0b00000011));
+        break;
+    case R:
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setRightSpeed(0);
+            motor.setLeftDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            bluetooth.println("right");
+        } while (!(sensors < 0b11000000 && sensors > 0b00000011));
+        break;
+    case T:
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setLeftSpeed(0);
+            motor.setRightDirection(Motor::Front);
+            motor.setRightSpeed(100);
+
+            bluetooth.println("left");
+        } while (!(sensors < 0b11000000 && sensors > 0b00000011));
+        break;
+    default:
+
+        break;
+    }
 }
