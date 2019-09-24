@@ -170,9 +170,12 @@ uint8_t sensors = 0;
     {
         junctionControl(L);
     }
-    else if (sensors >= 0b00001111)
+    else if (sensors & 0b00001111 == 0b00001111) 
     {
         junctionControl(R);
+    }
+    else {
+        bluetooth.println("straight");
     }
 }
 
