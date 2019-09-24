@@ -1,3 +1,5 @@
+#define LF_WHITELINE_LOGIC
+
 #include "QTRSensorsAnalog.h"
 #include "pid_control.h"
 #include "motor_control.h"
@@ -18,10 +20,17 @@ SoftwareSerial bluetooth(12, 11);
     (const uint8_t)4
 
 QTRSensorsAnalog qtr(SENSOR_PINS, NUM_SENSORS);
-uint16_t sensorValues[NUM_SENSORS];
+uint16_t sensorValues[NUM_SENSORS], thresholdValues[NUM_SENSORS], thresholdValues2[NUM_SENSORS];
 uint16_t line;
 PIDControl pid(PID_IDEAL);
 Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS, MOTOR_STANDBY_PIN);
+
+enum Junction {
+    T, R, L, X
+};
+
+char juncs[] = "TRLX";
+
 
 void PID_tune() // Auto tune implemented using twiddle algorithm
 {
@@ -84,13 +93,28 @@ void setup()
     {
         qtr.calibrate();
     }
+    qtr.generateThreshold(thresholdValues, thresholdValues2);
     bluetooth.println("Done calib");
+    bluetooth.println("thresholdValues");
+    for (int i = 0; i < NUM_SENSORS;i++) {
+        bluetooth.print(thresholdValues[i]);
+        bluetooth.print(" ");
+    }
+    bluetooth.println();
+    for (int i = 0; i < NUM_SENSORS;i++) {
+        bluetooth.print(thresholdValues2[i]);
+        bluetooth.print(" ");
+    }
+    bluetooth.println();
     //PID_tune();
     digitalWrite(2, LOW);
 }
 unsigned int follow()
 {
     line = qtr.readLine(sensorValues);
+
+    junctionDetect();
+
     int16_t correction = pid.control((int)line);
 
     bluetooth.println(correction);
@@ -115,7 +139,43 @@ unsigned int follow()
 
     return abs(pid.getError(qtr.readLine(sensorValues)));
 }
+
 void loop()
 {
-    follow();
+    //follow();
+    qtr.readLine(sensorValues);
+    junctionDetect();
+}
+
+void junctionDetect () {
+uint8_t sensors = 0;
+#ifdef LF_WHITELINE_LOGIC
+    for (int i = 0; i < 8; i++) {
+        if (sensorValues[i] < thresholdValues2[i]) {
+            sensors |= (1 << (7 - i));
+        }
+    }
+#else
+    for (int i = 0; i < 8; i++) {
+        if (sensorValues[i] > thresholdValues2[i]) {
+            sensors |= (1 << (7 - i));
+        }
+    }
+#endif
+
+    if (sensors == 255) {
+        junctionControl (T);
+    }
+    else if(sensors >= 0b11110000)
+    {
+        junctionControl(L);
+    }
+    else if (sensors >= 0b00001111)
+    {
+        junctionControl(R);
+    }
+}
+
+void junctionControl(Junction J) {
+    bluetooth.println(juncs[J]);
 }
