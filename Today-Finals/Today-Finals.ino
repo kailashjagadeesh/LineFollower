@@ -83,6 +83,7 @@ void loop(){
   if(digitalRead(3)==0 && f==0){ 
     f=1;
     delay(500);
+    
   }
   else if(digitalRead(3)==0 && f==1){
     f=0;
