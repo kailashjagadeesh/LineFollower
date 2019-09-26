@@ -149,8 +149,8 @@ void loop()
 {
     line = qtr.readLine(sensorValues);
     sensors = sensorValuesInBinary();
-    junctionDetect();
     follow();
+    junctionDetect();
 }
 
 uint8_t sensorValuesInBinary()
@@ -177,10 +177,7 @@ uint8_t sensorValuesInBinary()
 }
 void stopCar(int time)
 {
-    motor.setLeftDirection(Motor::Front);
-    motor.setRightDirection(Motor::Front);
-    motor.setLeftSpeed(0);
-    motor.setRightSpeed(0);
+    motor.stopMotors();
     delay(time);
 }
 void junctionDetect()
@@ -209,7 +206,7 @@ void junctionDetect()
     motor.setRightDirection(Motor::Front);
     motor.setLeftSpeed(100);
     motor.setRightSpeed(100);
-    delay(200);
+    delay(250);
 
     stopCar(2000);
 
@@ -243,6 +240,7 @@ void junctionControl(Junction J)
 
             bluetooth.println("left");
         } while (!(sensors == 0b00111100));
+        delay(20);
         //bluetooth.println(sensors,BIN);
         break;
     case R:
@@ -257,6 +255,7 @@ void junctionControl(Junction J)
             motor.setRightSpeed(100);
             bluetooth.println("right");
         } while (!(sensors == 0b00111100));
+        delay(30);
         break;
     case T:
         do

@@ -19,8 +19,18 @@ public:
 
     void setLeftSpeed(uint8_t);
     void setRightSpeed(uint8_t);
-};
 
+    void stopMotors();
+};
+void Motor::stopMotors()
+{
+    digitalWrite(pinStandby,LOW);
+
+    setLeftSpeed(0);
+    setRightSpeed(0);
+
+    digitalWrite(pinStandby,HIGH);
+}
 Motor::Motor(const uint8_t pinLeft[], const uint8_t pinRight[], const uint8_t pinStby)
 {
     pinLeftFront = pinLeft[0];
