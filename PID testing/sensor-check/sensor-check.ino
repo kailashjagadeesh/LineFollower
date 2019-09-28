@@ -4,6 +4,7 @@
 #include "QTRSensorsAnalog.h"
 #include "pid_control.h"
 #include "motor_control.h"
+#include "shortest_path.h"
 #include <SoftwareSerial.h>
 
 #define redLED LED_BUILTIN
@@ -30,6 +31,7 @@ uint16_t line = 0;
 uint8_t sensors;
 PIDControl pid(PID_IDEAL);
 Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS, MOTOR_STANDBY_PIN);
+char junctionsTraversed[25] = "";
 
 enum Junction
 {
@@ -42,7 +44,16 @@ enum Junction
     FINISH,
     END
 };
+
+enum mode {
+    DRY_RUN,
+    ACTUAL_RUN
+};
+
 char juncs[] = "TRLXrlFE";
+
+
+void junctionControl(Junction J, mode m = DRY_RUN );
 
 void PID_tune() // Auto tune implemented using twiddle algorithm
 {
@@ -193,6 +204,10 @@ void junctionDetect()
     else if( sensors == 0b00000000)
     {
         j=END;
+
+        //There is no other junction possibility, therefore return immediately
+        junctionControl(j);
+        return;
     }
     else
     {
@@ -250,7 +265,7 @@ void junctionDetect()
     junctionControl(j);
 }
 
-void junctionControl(Junction J)
+void junctionControl(Junction J, mode m )
 {
     bluetooth.println(juncs[J]);
     uint8_t sensors;
@@ -299,9 +314,12 @@ void junctionControl(Junction J)
             //bluetooth.println("left");
         } while (!(sensors == 0b00111100));
         delay(20);
+
+        strcat(junctionsTraversed, "L");
+
         break;
     case RS:  // Simply move forward
-
+        strcat(junctionsTraversed, "S");
         break;
     case LS:
         do
@@ -331,9 +349,11 @@ void junctionControl(Junction J)
 
             //bluetooth.println("left");
         } while (!(sensors == 0b00111100));
+        strcat(junctionsTraversed, "L");
         break;
     
     case X:
+
         do
         {
             qtr.readLine(sensorValues);
@@ -361,6 +381,7 @@ void junctionControl(Junction J)
 
             //bluetooth.println("left");
         } while (!(sensors == 0b00111100));
+        strcat(junctionsTraversed, "L");
         break;
     case END:
         do
@@ -375,6 +396,8 @@ void junctionControl(Junction J)
 
             bluetooth.println("U-turn");
         } while (!(sensors == 0b00111100));
+        
+        strcat(junctionsTraversed, "B");
         break;
 
     case FINISH:
@@ -395,4 +418,6 @@ void junctionControl(Junction J)
     default:
         break;
     }
+
+    bluetooth.println(junctionsTraversed);
 }

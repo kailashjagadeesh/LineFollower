@@ -1,4 +1,3 @@
-#include<stdio.h>
 #include<string.h>
 
 int DeleteElement(char *arr, int n, int pos)
@@ -118,9 +117,4 @@ void SimplifyPath(char path[], char choice)
     if (strlen(path) != n)
      SimplifyPath(path, choice);
 }
-int main()
-{
-    char SamplePath[]={'L','L','B','L','B','S'};
-    SimplifyPath(SamplePath,'L');
-    printf("%s", SamplePath);
-}
+
