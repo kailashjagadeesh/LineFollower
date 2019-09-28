@@ -5,6 +5,10 @@
 #include "motor_control.h"
 #include <SoftwareSerial.h>
 
+#define redLED LED_BUILTIN
+#define yellowLED 2
+#define button 12
+
 #define PID_IDEAL 3500
 #define baseSpeed 255
 #define SENSOR_PINS \
@@ -33,9 +37,10 @@ enum Junction
     L,
     X,
     RS,
-    LS
+    LS,
+    FINISH,
+    END
 };
-
 char juncs[] = "TRLXtrl";
 
 void PID_tune() // Auto tune implemented using twiddle algorithm
@@ -90,8 +95,9 @@ void setup()
 {
     bluetooth.begin(9600);
 
-    pinMode(2, OUTPUT);
-
+    pinMode(button,INPUT);
+    pinMode(yellowLED, OUTPUT);
+    pinMode(redLED,OUTPUT);
     //callibration
     digitalWrite(2, HIGH);
     //bluetooth.println("Calibrating");
@@ -182,25 +188,30 @@ void stopCar(int time)
 }
 void junctionDetect()
 {
-    int j;
+    uint8_t j;
+    bluetooth.println(sensors,BIN);
 
-    if (sensors == 255)
+    if ((sensors & 0b10000001) == 0b10000001)
     {
         j = T;
     }
-    else if ((sensors & 0b11110000) == 0b11110000) 
+    else if ((sensors & 0b11111001) == 0b11111000)
     {
         j = L;
     }
-    else if ((sensors & 0b00001111) == 0b00001111)
+    else if ((sensors & 0b11011111) == 0b00011111)
     {
         j = R;
+    }
+    else if( sensors == 0b00000000)
+    {
+        j=END;
     }
     else
     {
         return;
     }
-    stopCar(2000);
+    //stopCar(2000);
 
     motor.setLeftDirection(Motor::Front);
     motor.setRightDirection(Motor::Front);
@@ -208,14 +219,18 @@ void junctionDetect()
     motor.setRightSpeed(100);
     delay(250);
 
-    stopCar(2000);
+    stopCar(500);
 
     qtr.readLine(sensorValues);
     sensors = sensorValuesInBinary();
 
-    if (sensors < 0b1000000 && sensors > 0b0000001)
+    if ( ((sensors & 0b00111100) == 0b00111100) || ((sensors & 0b00111000) == 0b00111000) || ((sensors & 0b00011100) == 0b00011100) )
     {
         j += 3;
+    }
+    if ((sensors & 0b10000001) == 0b10000001)
+    {
+        j = FINISH;
     }
 
     junctionControl(j);
@@ -238,10 +253,9 @@ void junctionControl(Junction J)
             motor.setLeftSpeed(100);
             motor.setRightSpeed(100);
 
-            bluetooth.println("left");
+            //bluetooth.println("left");
         } while (!(sensors == 0b00111100));
         delay(20);
-        //bluetooth.println(sensors,BIN);
         break;
     case R:
         do
@@ -253,9 +267,9 @@ void junctionControl(Junction J)
             motor.setLeftDirection(Motor::Front);
             motor.setLeftSpeed(100);
             motor.setRightSpeed(100);
-            bluetooth.println("right");
+            //bluetooth.println("right");
         } while (!(sensors == 0b00111100));
-        delay(30);
+        //delay(20);
         break;
     case T:
         do
@@ -263,15 +277,108 @@ void junctionControl(Junction J)
             qtr.readLine(sensorValues);
             sensors = sensorValuesInBinary();
 
-            motor.setLeftSpeed(0);
+            motor.setLeftDirection(Motor::Back);
             motor.setRightDirection(Motor::Front);
+            motor.setLeftSpeed(100);
             motor.setRightSpeed(100);
 
             //bluetooth.println("left");
-        } while (!(sensors < 0b11000000 && sensors > 0b00000011));
+        } while (!(sensors == 0b00111100));
+        delay(20);
+        break;
+    case RS:  // Simply move forward
+
+        break;
+    case LS:
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setLeftDirection(Motor::Back);
+            motor.setRightDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            //bluetooth.println("left");
+        } while ((sensors == 0b00111100));
+
+        delay(50);
+
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setLeftDirection(Motor::Back);
+            motor.setRightDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            //bluetooth.println("left");
+        } while (!(sensors == 0b00111100));
+        break;
+    
+    case X:
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setLeftDirection(Motor::Back);
+            motor.setRightDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            //bluetooth.println("left");
+        } while ((sensors == 0b00111100));
+
+        delay(50);
+
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setLeftDirection(Motor::Back);
+            motor.setRightDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            //bluetooth.println("left");
+        } while (!(sensors == 0b00111100));
+        break;
+    case END:
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setLeftDirection(Motor::Back);
+            motor.setRightDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            bluetooth.println("U-turn");
+        } while (!(sensors == 0b00111100));
+        break;
+
+    case FINISH:
+        bluetooth.println("Dry run complete");
+        stopCar(10);
+        while(1)
+        {
+            digitalWrite(redLED,HIGH);
+            delay(750);
+            digitalWrite(redLED,LOW);
+            delay(750);
+            if(digitalRead(button) == LOW)
+            {
+                return;
+            }
+        }
         break;
     default:
-
         break;
     }
 }
