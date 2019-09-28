@@ -1,3 +1,4 @@
+
 #define LF_WHITELINE_LOGIC
 
 #include "QTRSensorsAnalog.h"
@@ -41,7 +42,7 @@ enum Junction
     FINISH,
     END
 };
-char juncs[] = "TRLXtrl";
+char juncs[] = "TRLXrlFE";
 
 void PID_tune() // Auto tune implemented using twiddle algorithm
 {
@@ -106,23 +107,10 @@ void setup()
         qtr.calibrate();
     }
     qtr.generateThreshold(thresholdValues, thresholdValues2);
-    //bluetooth.println("Done calib");
-    //bluetooth.println("thresholdValues");
-    for (int i = 0; i < NUM_SENSORS; i++)
-    {
-        //bluetooth.print(thresholdValues[i]);
-        //bluetooth.print(" ");
-    }
-    //bluetooth.println();
-    for (int i = 0; i < NUM_SENSORS; i++)
-    {
-        //bluetooth.print(thresholdValues2[i]);
-        //bluetooth.print(" ");
-    }
-    //bluetooth.println();
-    //PID_tune();
+    // //PID_tune();
     digitalWrite(2, LOW);
 }
+
 unsigned int follow()
 {
 
@@ -189,7 +177,6 @@ void stopCar(int time)
 void junctionDetect()
 {
     uint8_t j;
-    bluetooth.println(sensors,BIN);
 
     if ((sensors & 0b10000001) == 0b10000001)
     {
@@ -211,7 +198,34 @@ void junctionDetect()
     {
         return;
     }
-    //stopCar(2000);
+
+
+    line = qtr.readLine(sensorValues);
+    sensors = sensorValuesInBinary();
+
+    if ((sensors & 0b10000001) == 0b10000001)
+    {
+        j = T;
+    }
+    else if ((sensors & 0b11111001) == 0b11111000)
+    {
+        j = L;
+    }
+    else if ((sensors & 0b11011111) == 0b00011111)
+    {
+        j = R;
+    }
+    else if( sensors == 0b00000000)
+    {
+        j=END;
+    }
+    else
+    {
+        return;
+    }
+
+
+    stopCar(500);
 
     motor.setLeftDirection(Motor::Front);
     motor.setRightDirection(Motor::Front);
@@ -219,7 +233,7 @@ void junctionDetect()
     motor.setRightSpeed(100);
     delay(250);
 
-    stopCar(500);
+    stopCar(300);
 
     qtr.readLine(sensorValues);
     sensors = sensorValuesInBinary();
