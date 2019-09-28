@@ -1,4 +1,7 @@
-int deleteElement(char *arr, int n, int pos)
+#include<stdio.h>
+#include<string.h>
+
+int DeleteElement(char *arr, int n, int pos)
 {
     for (int i = pos; i < n - 1; i++)
         arr[i] = arr[i + 1];
@@ -6,7 +9,7 @@ int deleteElement(char *arr, int n, int pos)
     return n - 1;
 }
 
-int insertElement(char *arr, int n, int pos, int val)
+int InsertElement(char *arr, int n, int pos, int val)
 {
     for (int i = n; i >= pos; i--)
         arr[i] = arr[i - 1];
@@ -78,7 +81,7 @@ char LeftHand(char a[])
         return '\0';
     }
 }
-int reduce_path(char *path, int n, int index, char choice)
+int ReducePath(char *path, int n, int index, char choice)
 {
     //n = strlen(path);
     if (index >= 0 && index <= n)
@@ -93,14 +96,13 @@ int reduce_path(char *path, int n, int index, char choice)
         if (ans != '\0')
         {
             for (int c = 0; c < 3; c++)
-                n = deleteElement(path, n, index);
-            n = insertElement(path, n, index, ans);
+                n = DeleteElement(path, n, index);
+            n = InsertElement(path, n, index, ans);
         }
     }
-    index++;
 }
 
-char *simplify_path(char path[], char choice)
+void SimplifyPath(char path[], char choice)
 {
 
     //SSLLSRRRBRRBRRRBSRRLLR
@@ -110,7 +112,10 @@ char *simplify_path(char path[], char choice)
     int n = strlen(path);
     for (int i = 0; i < n; i++)
     {
-        reduce_path(path, n, i, choice);
+        ReducePath(path, n, i, choice);
     }
-    return path;
+
+    if (strlen(path) != n)
+     SimplifyPath(path, choice);
 }
+

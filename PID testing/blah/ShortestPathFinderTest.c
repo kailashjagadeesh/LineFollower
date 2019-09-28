@@ -100,10 +100,9 @@ int ReducePath(char *path, int n, int index, char choice)
             n = InsertElement(path, n, index, ans);
         }
     }
-    index++;
 }
 
-char *SimplifyPath(char path[], char choice)
+void SimplifyPath(char path[], char choice)
 {
 
     //SSLLSRRRBRRBRRRBSRRLLR
@@ -115,11 +114,13 @@ char *SimplifyPath(char path[], char choice)
     {
         ReducePath(path, n, i, choice);
     }
-    return path;
+
+    if (strlen(path) != n)
+     SimplifyPath(path, choice);
 }
 int main()
 {
-    char SamplePath[]={'L','B','L','L','B','R'};
+    char SamplePath[]={'L','L','B','L','B','S'};
     SimplifyPath(SamplePath,'L');
     printf("%s", SamplePath);
 }
