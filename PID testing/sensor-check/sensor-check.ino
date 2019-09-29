@@ -23,17 +23,17 @@ SoftwareSerial bluetooth(12, 11);
 #define MOTOR_LEFT_PINS \
     (const uint8_t[]) { 5, 6, 9 }
 #define MOTOR_STANDBY_PIN \
-    (const uint8_t)4
+    (const uint8_t)4 // Pulling standby low stops both motors simultaneously
 
-QTRSensorsAnalog qtr(SENSOR_PINS, NUM_SENSORS);
+QTRSensorsAnalog qtr(SENSOR_PINS, NUM_SENSORS); // Object that handles all sensor operations
 uint16_t sensorValues[NUM_SENSORS], thresholdValues[NUM_SENSORS], thresholdValues2[NUM_SENSORS];
-uint16_t line = 0;
-uint8_t sensors;
-PIDControl pid(PID_IDEAL);
+uint16_t line = 0;         // Holds value of sensor readings Ex. 3500,5000
+uint8_t sensors;           // 8 bit number, in binary says if a sensor detects a line or not(1 bit per sensor)
+PIDControl pid(PID_IDEAL); // Object handles all PID related activities
 Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS, MOTOR_STANDBY_PIN);
-char junctionsTraversed[25] = "";
+char junctionsTraversed[25] = ""; // Holds all the choices taken so far
 
-enum Junction
+enum Junction // All possible junctions
 {
     T,
     R,
@@ -45,17 +45,17 @@ enum Junction
     END
 };
 
-enum mode {
+enum mode
+{
     DRY_RUN,
     ACTUAL_RUN
 };
 
 char juncs[] = "TRLXrlFE";
 
+void junctionControl(Junction J, mode m = DRY_RUN);
 
-void junctionControl(Junction J, mode m = DRY_RUN );
-
-void PID_tune() // Auto tune implemented using twiddle algorithm
+void PID_tune() // Auto tune implemented using twiddle algorithm (gradient descend )
 {
     //bluetooth.println("PID tuning...");
     float best_err = abs(pid.getError(qtr.readLine(sensorValues)));
@@ -107,22 +107,22 @@ void setup()
 {
     bluetooth.begin(9600);
 
-    pinMode(button,INPUT);
+    pinMode(button, INPUT);
     pinMode(yellowLED, OUTPUT);
-    pinMode(redLED,OUTPUT);
+    pinMode(redLED, OUTPUT);
     //callibration
     digitalWrite(2, HIGH);
     //bluetooth.println("Calibrating");
-    for (int i = 0; i < 400; i++)
+    for (int i = 0; i < 400; i++) // Calibrate IR sensors
     {
         qtr.calibrate();
     }
-    qtr.generateThreshold(thresholdValues, thresholdValues2);
-    // //PID_tune();
+    qtr.generateThreshold(thresholdValues, thresholdValues2); // Generates threshold values for detection of line
+    // PID_tune();
     digitalWrite(2, LOW);
 }
 
-unsigned int follow()
+unsigned int follow() // Uses PID to follow line
 {
 
     int16_t correction = pid.control((int)line);
@@ -158,7 +158,7 @@ void loop()
     junctionDetect();
 }
 
-uint8_t sensorValuesInBinary()
+uint8_t sensorValuesInBinary()   // Converts sensor values to binary format
 {
     uint8_t sensors = 0;
 #ifdef LF_WHITELINE_LOGIC
@@ -180,12 +180,12 @@ uint8_t sensorValuesInBinary()
 #endif
     return sensors;
 }
-void stopCar(int time)
+void stopCar(int time)  // Stops bot for a given time
 {
     motor.stopMotors();
     delay(time);
 }
-void junctionDetect()
+void junctionDetect()  // Detects any junction and calls junction control
 {
     uint8_t j;
 
@@ -201,9 +201,9 @@ void junctionDetect()
     {
         j = R;
     }
-    else if( sensors == 0b00000000)
+    else if (sensors == 0b00000000)
     {
-        j=END;
+        j = END;
 
         //There is no other junction possibility, therefore return immediately
         junctionControl(j);
@@ -213,7 +213,6 @@ void junctionDetect()
     {
         return;
     }
-
 
     line = qtr.readLine(sensorValues);
     sensors = sensorValuesInBinary();
@@ -230,15 +229,14 @@ void junctionDetect()
     {
         j = R;
     }
-    else if( sensors == 0b00000000)
+    else if (sensors == 0b00000000)
     {
-        j=END;
+        j = END;
     }
     else
     {
         return;
     }
-
 
     stopCar(500);
 
@@ -253,7 +251,7 @@ void junctionDetect()
     qtr.readLine(sensorValues);
     sensors = sensorValuesInBinary();
 
-    if ( ((sensors & 0b00111100) == 0b00111100) || ((sensors & 0b00111000) == 0b00111000) || ((sensors & 0b00011100) == 0b00011100) )
+    if (((sensors & 0b00111100) == 0b00111100) || ((sensors & 0b00111000) == 0b00111000) || ((sensors & 0b00011100) == 0b00011100))
     {
         j += 3;
     }
@@ -265,7 +263,7 @@ void junctionDetect()
     junctionControl(j);
 }
 
-void junctionControl(Junction J, mode m )
+void junctionControl(Junction J, mode m)  // Take appropriate action based on the junction detected 
 {
     bluetooth.println(juncs[J]);
     uint8_t sensors;
@@ -318,7 +316,7 @@ void junctionControl(Junction J, mode m )
         strcat(junctionsTraversed, "L");
 
         break;
-    case RS:  // Simply move forward
+    case RS: // Simply move forward
         strcat(junctionsTraversed, "S");
         break;
     case LS:
@@ -351,7 +349,7 @@ void junctionControl(Junction J, mode m )
         } while (!(sensors == 0b00111100));
         strcat(junctionsTraversed, "L");
         break;
-    
+
     case X:
 
         do
@@ -396,20 +394,20 @@ void junctionControl(Junction J, mode m )
 
             bluetooth.println("U-turn");
         } while (!(sensors == 0b00111100));
-        
+
         strcat(junctionsTraversed, "B");
         break;
 
     case FINISH:
         bluetooth.println("Dry run complete");
         stopCar(10);
-        while(1)
+        while (1)
         {
-            digitalWrite(redLED,HIGH);
+            digitalWrite(redLED, HIGH);
             delay(750);
-            digitalWrite(redLED,LOW);
+            digitalWrite(redLED, LOW);
             delay(750);
-            if(digitalRead(button) == LOW)
+            if (digitalRead(button) == LOW)
             {
                 return;
             }

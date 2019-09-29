@@ -31,7 +31,7 @@ void Motor::stopMotors()
 
     digitalWrite(pinStandby,HIGH);
 }
-Motor::Motor(const uint8_t pinLeft[], const uint8_t pinRight[], const uint8_t pinStby)
+Motor::Motor(const uint8_t pinLeft[], const uint8_t pinRight[], const uint8_t pinStby) //Initialize motor stuff
 {
     pinLeftFront = pinLeft[0];
     pinLeftBack = pinLeft[1];
