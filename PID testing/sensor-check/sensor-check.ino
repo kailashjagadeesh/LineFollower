@@ -396,6 +396,7 @@ void junctionControl(Junction J, mode m)  // Take appropriate action based on th
         } while (!(sensors == 0b00111100));
 
         strcat(junctionsTraversed, "B");
+        ShortestPath(junctionsTraversed);
         break;
 
     case FINISH:
@@ -418,4 +419,8 @@ void junctionControl(Junction J, mode m)  // Take appropriate action based on th
     }
 
     bluetooth.println(junctionsTraversed);
+}
+void ShortestPath(char PathTraversed)
+{
+   SimplifyPath(PathTraversed);
 }
