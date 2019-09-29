@@ -483,7 +483,40 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
             delay(20);
 
             break;
-        case RS: // Simply move forward
+        case RS: 
+            do
+            {
+                if (junctionsTraversed[choiceJunction] == 'R')
+                {
+                    qtr.readLine(sensorValues);
+                    sensors = sensorValuesInBinary();
+
+                    motor.setRightDirection(Motor::Back);
+                    motor.setLeftDirection(Motor::Front);
+                    motor.setLeftSpeed(100);
+                    motor.setRightSpeed(100);
+                }
+
+            } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S') );
+
+            delay(50);
+
+            do
+            {
+                if (junctionsTraversed[choiceJunction] == 'R')
+                {
+                    qtr.readLine(sensorValues);
+                    sensors = sensorValuesInBinary();
+
+                    motor.setRightDirection(Motor::Back);
+                    motor.setLeftDirection(Motor::Front);
+                    motor.setLeftSpeed(100);
+                    motor.setRightSpeed(100);
+                }
+
+                //bluetooth.println("left");
+            } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S') );
+            ++choiceJunction;
             break;
         case LS:
             do
@@ -498,43 +531,54 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
                     motor.setLeftSpeed(100);
                     motor.setRightSpeed(100);
                 }
-                else if(junctionsTraversed[choiceJunction] == 'S')
-                {
-                    break;
-                }
 
-            } while ((sensors == 0b00111100));
+            } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S') );
 
             delay(50);
 
             do
             {
-                qtr.readLine(sensorValues);
-                sensors = sensorValuesInBinary();
+                if (junctionsTraversed[choiceJunction] == 'L')
+                {
+                    qtr.readLine(sensorValues);
+                    sensors = sensorValuesInBinary();
 
-                motor.setLeftDirection(Motor::Back);
-                motor.setRightDirection(Motor::Front);
-                motor.setLeftSpeed(100);
-                motor.setRightSpeed(100);
+                    motor.setLeftDirection(Motor::Back);
+                    motor.setRightDirection(Motor::Front);
+                    motor.setLeftSpeed(100);
+                    motor.setRightSpeed(100);
+                }
 
                 //bluetooth.println("left");
-            } while (!(sensors == 0b00111100));
+            } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S') );
+            ++choiceJunction;
             break;
-
         case X:
 
             do
             {
-                qtr.readLine(sensorValues);
-                sensors = sensorValuesInBinary();
 
-                motor.setLeftDirection(Motor::Back);
-                motor.setRightDirection(Motor::Front);
-                motor.setLeftSpeed(100);
-                motor.setRightSpeed(100);
+                if (junctionsTraversed[choiceJunction] == 'L')
+                {
+                    qtr.readLine(sensorValues);
+                    sensors = sensorValuesInBinary();
 
-                //bluetooth.println("left");
-            } while ((sensors == 0b00111100));
+                    motor.setLeftDirection(Motor::Back);
+                    motor.setRightDirection(Motor::Front);
+                    motor.setLeftSpeed(100);
+                    motor.setRightSpeed(100);
+                }
+                else if (junctionsTraversed[choiceJunction] == 'R')
+                {
+                    qtr.readLine(sensorValues);
+                    sensors = sensorValuesInBinary();
+
+                    motor.setRightDirection(Motor::Back);
+                    motor.setLeftDirection(Motor::Front);
+                    motor.setLeftSpeed(100);
+                    motor.setRightSpeed(100);
+                }
+            } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S'));
 
             delay(50);
 
@@ -549,7 +593,7 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
                 motor.setRightSpeed(100);
 
                 //bluetooth.println("left");
-            } while (!(sensors == 0b00111100));
+            } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S') );
             break;
         case END:
             do
@@ -590,5 +634,5 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
 }
 void ShortestPath(char PathTraversed)
 {
-   SimplifyPath(PathTraversed);
+   SimplifyPath(PathTraversed,'L');
 }

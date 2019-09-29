@@ -1,5 +1,5 @@
 #include<string.h>
-
+void SimplifyPath(char path[], char choice);
 int DeleteElement(char *arr, int n, int pos)
 {
     for (int i = pos; i < n - 1; i++)
