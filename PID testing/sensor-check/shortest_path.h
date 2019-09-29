@@ -80,7 +80,7 @@ char LeftHand(char a[])
         return '\0';
     }
 }
-int ReducePath(char *path, int n, int index, char choice)
+void ReducePath(char *path, int n, int index, char choice)
 {
     //n = strlen(path);
     if (index >= 0 && index <= n)
