@@ -756,5 +756,9 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
 }
 void ShortestPath(char PathTraversed)
 {
+    #ifdef LEFT_LOGIC
     SimplifyPath(PathTraversed, 'L');
+    #else
+    SimplifyPath(PathTraversed, 'R');
+    #endif
 }
