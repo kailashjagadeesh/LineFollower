@@ -1,5 +1,6 @@
 
 #define LF_WHITELINE_LOGIC
+#define LEFT_LOGIC
 
 #include "QTRSensorsAnalog.h"
 #include "pid_control.h"
@@ -256,6 +257,7 @@ void junctionDetect() // Detects any junction and calls junction control
 
 void junctionControl(Junction J, mode m) // Take appropriate action based on the junction detected
 {
+#ifdef LEFT_LOGIC
     bluetooth.println(juncs[J]);
     digitalWrite(yellowLED, !digitalRead(yellowLED));
     uint8_t sensors;
@@ -409,6 +411,126 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
             break;
         }
     }
+#else
+    if (m == DRY_RUN)
+    {
+        switch (J)
+        {
+        case L:
+            do
+            {
+                qtr.readLine(sensorValues);
+                sensors = sensorValuesInBinary();
+
+                motor.setLeftDirection(Motor::Back);
+                motor.setRightDirection(Motor::Front);
+                motor.setLeftSpeed(100);
+                motor.setRightSpeed(100);
+
+                //bluetooth.println("left");
+            } while (!(sensors == 0b00111100));
+            delay(20);
+            break;
+        case R:
+            do
+            {
+                qtr.readLine(sensorValues);
+                sensors = sensorValuesInBinary();
+
+                motor.setRightDirection(Motor::Back);
+                motor.setLeftDirection(Motor::Front);
+                motor.setLeftSpeed(100);
+                motor.setRightSpeed(100);
+                //bluetooth.println("right");
+            } while (!(sensors == 0b00111100));
+            //delay(20);
+            break;
+        case T:
+            do
+            {
+                qtr.readLine(sensorValues);
+                sensors = sensorValuesInBinary();
+
+                motor.setRightDirection(Motor::Back);
+                motor.setLeftDirection(Motor::Front);
+                motor.setLeftSpeed(100);
+                motor.setRightSpeed(100);
+
+                //bluetooth.println("right");
+            } while (!(sensors == 0b00111100));
+            delay(20);
+
+            strcat(junctionsTraversed, "R");
+
+            break;
+        }
+    case SR:
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setRightDirection(Motor::Back);
+            motor.setLeftDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            //bluetooth.println("right");
+        } while ((sensors == 0b00111100));
+
+        delay(50);
+
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setRightDirection(Motor::Back);
+            motor.setLeftDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            //bluetooth.println("left");
+        } while (!(sensors == 0b00111100));
+        strcat(junctionsTraversed, "R");
+        break;
+    case LS: // Simply move forward
+        strcat(junctionsTraversed, "S");
+
+        break;
+
+    case X:
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setRightDirection(Motor::Back);
+            motor.setLeftDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            //bluetooth.println("right");
+        } while ((sensors == 0b00111100));
+
+        delay(50);
+
+        do
+        {
+            qtr.readLine(sensorValues);
+            sensors = sensorValuesInBinary();
+
+            motor.setRightDirection(Motor::Back);
+            motor.setLeftDirection(Motor::Front);
+            motor.setLeftSpeed(100);
+            motor.setRightSpeed(100);
+
+            //bluetooth.println("right");
+        } while (!(sensors == 0b00111100));
+        strcat(junctionsTraversed, "R");
+        break;
+
+#endif
     else if (m == ACTUAL_RUN)
     {
         //bluetooth.println(junctionsTraversed[choiceJunction]);
@@ -615,5 +737,9 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
 }
 void ShortestPath(char *PathTraversed)
 {
+    #ifdef LEFT_LOGIC
     SimplifyPath(PathTraversed, 'L');
+    #else
+    SimplifyPath(PathTraversed, 'R');
+    #endif
 }
