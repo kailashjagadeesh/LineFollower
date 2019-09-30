@@ -1,6 +1,6 @@
 
 #define LF_WHITELINE_LOGIC
-#define RIGHT_LOGIC
+#define LEFT_LOGIC
 
 #include "QTRSensorsAnalog.h"
 #include "pid_control.h"
@@ -109,7 +109,7 @@ void setup()
     pinMode(redLED, OUTPUT);
     //callibration
     digitalWrite(2, HIGH);
-    for (int i = 0; i < 400; i++) // Calibrate IR sensors
+    for (int i = 0; i < 200; i++) // Calibrate IR sensors
     {
         qtr.calibrate();
     }
@@ -211,9 +211,11 @@ void junctionDetect() // Detects any junction and calls junction control
     }
     else
     {
+        //Continue with PID
         return;
     }
 
+    //Secondary detection to avoid errors
     line = qtr.readLine(sensorValues);
     sensors = sensorValuesInBinary();
 
@@ -235,6 +237,7 @@ void junctionDetect() // Detects any junction and calls junction control
     }
     else
     {
+        //Continue with PID
         return;
     }
 
@@ -242,8 +245,8 @@ void junctionDetect() // Detects any junction and calls junction control
     motor.setRightDirection(Motor::Front);
     motor.setLeftSpeed(MOTOR_TURN_SPEED);
     motor.setRightSpeed(MOTOR_TURN_SPEED);
-    delay(JUNCTION_OVERSHOOT_DELAY);
 
+    delay(JUNCTION_OVERSHOOT_DELAY);
     stopCar(300);
 
     qtr.readLine(sensorValues);
@@ -422,8 +425,6 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
                 motor.setRightDirection(Motor::Front);
                 motor.setLeftSpeed(MOTOR_TURN_SPEED);
                 motor.setRightSpeed(MOTOR_TURN_SPEED);
-
-                //bluetooth.println("left");
             } while (!(sensors == 0b00111100));
             break;
         case R:
@@ -448,8 +449,6 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
                 motor.setLeftDirection(Motor::Front);
                 motor.setLeftSpeed(MOTOR_TURN_SPEED);
                 motor.setRightSpeed(MOTOR_TURN_SPEED);
-
-                //bluetooth.println("right");
             } while (!(sensors == 0b00111100));
 
             strcat(junctionsTraversed, "R");
@@ -465,8 +464,6 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
                 motor.setLeftDirection(Motor::Front);
                 motor.setLeftSpeed(MOTOR_TURN_SPEED);
                 motor.setRightSpeed(MOTOR_TURN_SPEED);
-
-                //bluetooth.println("right");
             } while ((sensors & 0b10000000) != 0b10000000);
 
             delay(50);
@@ -511,8 +508,6 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
                 motor.setLeftDirection(Motor::Front);
                 motor.setLeftSpeed(MOTOR_TURN_SPEED);
                 motor.setRightSpeed(MOTOR_TURN_SPEED);
-
-                //bluetooth.println("right");
             } while (!(sensors == 0b00111100));
             strcat(junctionsTraversed, "R");
             break;
@@ -748,6 +743,7 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
         }
     }
 }
+
 void ShortestPath(char *PathTraversed)
 {
 #ifdef LEFT_LOGIC
