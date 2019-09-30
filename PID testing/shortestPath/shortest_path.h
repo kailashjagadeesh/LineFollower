@@ -118,4 +118,3 @@ void SimplifyPath(char path[], char choice)
     if (strlen(path) != n)
      SimplifyPath(path, choice);
 }
-

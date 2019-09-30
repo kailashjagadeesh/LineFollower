@@ -15,7 +15,7 @@ PIDControl::PIDControl(uint16_t _targetValue)
 
     parameters[0] = 4.85;
     parameters[1] = 4.35;
-    parameters[2] = 0.01;
+    parameters[2] = 0.00;
 
     /*
         Best values so far 
