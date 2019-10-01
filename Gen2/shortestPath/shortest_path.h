@@ -1,6 +1,5 @@
-#include<stdio.h>
-#include<string.h>
-
+#include <string.h>
+void SimplifyPath(char path[], char choice);
 int DeleteElement(char *arr, int n, int pos)
 {
     for (int i = pos; i < n - 1; i++)
@@ -81,7 +80,7 @@ char LeftHand(char a[])
         return '\0';
     }
 }
-int ReducePath(char *path, int n, int index, char choice)
+void ReducePath(char *path, int n, int index, char choice)
 {
     //n = strlen(path);
     if (index >= 0 && index <= n)
@@ -116,5 +115,19 @@ void SimplifyPath(char path[], char choice)
     }
 
     if (strlen(path) != n)
-     SimplifyPath(path, choice);
+        SimplifyPath(path, choice);
+}
+
+void FilterPath(char *path)
+{
+    int n = strlen(path);
+
+    for (int i = 0; i < n; i++)
+    {
+        if (path[i] == 'B' && path[i + 1] == 'B')
+        {
+            n = DeleteElement(path, n, i + 1);
+            i--;
+        }
+    }
 }
