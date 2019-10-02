@@ -1,6 +1,5 @@
 
 #define LF_WHITELINE_LOGIC
-#define LEFT_LOGIC
 
 #include "QTRSensorsAnalog.h"
 #include "pid_control.h"
@@ -28,7 +27,7 @@ SoftwareSerial bluetooth(12, 11);
 
 #define JUNCTION_OVERSHOOT_DELAY 200
 #define MOTOR_TURN_SPEED 100
-
+#define BUTTON_PRESS_DELAY 2000
 QTRSensorsAnalog qtr(SENSOR_PINS, NUM_SENSORS); // Object that handles all sensor operations
 uint8_t choiceJunction = 0;
 uint16_t sensorValues[NUM_SENSORS], thresholdValues[NUM_SENSORS], thresholdValues2[NUM_SENSORS];
@@ -37,7 +36,7 @@ uint8_t sensors;           // 8 bit number, in binary says if a sensor detects a
 PIDControl pid(PID_IDEAL); // Object handles all PID related activities
 Motor motor(MOTOR_LEFT_PINS, MOTOR_RIGHT_PINS, MOTOR_STANDBY_PIN);
 char junctionsTraversed[25] = ""; // Holds all the choices taken so far
-
+bool algorithm = 0;
 enum Junction // All possible junctions
 {
   T,
@@ -49,6 +48,11 @@ enum Junction // All possible junctions
   FINISH,
   END,
   S
+};
+enum Algorithm
+{
+  LEFT_LOGIC,
+  RIGHT_LOGIC
 };
 
 enum mode
@@ -99,7 +103,28 @@ void PID_tune() // Auto tune implemented using twiddle algorithm (gradient desce
     sum = (pid.dp[0] + pid.dp[1] + pid.dp[2]);
   }
 }
+void waitForButtonPress()    // After calibration is done yellow light swithces off
+{                            // Short press will start the bot with LEFT major algorithm
+  digitalWrite(yellowLED, LOW);   // Pressing button TILL Yellow LED glows up again will start bot with RIGHT major algorithm 
+  while (digitalRead(button) == 1)
+    ;
+  int pressStartTime = millis();
 
+  while (digitalRead(button) == 0)
+  {
+    if (millis() - pressStartTime >= BUTTON_PRESS_DELAY)
+      digitalWrite(yellowLED, HIGH);
+  }
+  int pressDuration = millis() - pressStartTime;
+  if (pressDuration <= BUTTON_PRESS_DELAY)
+    algorithm = LEFT_LOGIC;
+  else
+    algorithm = RIGHT_LOGIC;
+
+  bluetooth.println(algorithm);
+
+  delay(1500);
+}
 void setup()
 {
   bluetooth.begin(9600);
@@ -115,14 +140,8 @@ void setup()
   }
   qtr.generateThreshold(thresholdValues, thresholdValues2); // Generates threshold values for detection of line
   // PID_tune();
-  digitalWrite(2, LOW);
-  while (digitalRead(button))
-    ;
-  digitalWrite(2, HIGH);
-  delay(500);
-  digitalWrite(2, LOW);
+  waitForButtonPress();
 }
-
 unsigned int follow() // Uses PID to follow line
 {
 
@@ -269,11 +288,12 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
   bluetooth.println(juncs[J]);
   digitalWrite(yellowLED, !digitalRead(yellowLED));
   uint8_t sensors;
-#ifdef LEFT_LOGIC
   if (m == DRY_RUN)
   {
-    switch (J)
+    if (algorithm == LEFT_LOGIC)
     {
+      switch (J)
+      {
       case L:
         do
         {
@@ -405,13 +425,13 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
         delay(1000);
         Mode = ACTUAL_RUN;
         return;
+      }
     }
-  }
-#else
-  if (m == DRY_RUN)
-  {
-    switch (J)
+    else if (algorithm == RIGHT_LOGIC)
     {
+
+      switch (J)
+      {
       case L:
         do
         {
@@ -539,14 +559,41 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
         delay(1000);
         Mode = ACTUAL_RUN;
         return;
+      }
     }
   }
-#endif
   else if (m == ACTUAL_RUN)
   {
     switch (J)
     {
-      case L:
+    case L:
+      do
+      {
+        qtr.readLine(sensorValues);
+        sensors = sensorValuesInBinary();
+
+        motor.setLeftDirection(Motor::Back);
+        motor.setRightDirection(Motor::Front);
+        motor.setLeftSpeed(MOTOR_TURN_SPEED);
+        motor.setRightSpeed(MOTOR_TURN_SPEED);
+
+      } while (!(sensors == 0b01111000));
+      break;
+    case R:
+      do
+      {
+        qtr.readLine(sensorValues);
+        sensors = sensorValuesInBinary();
+
+        motor.setRightDirection(Motor::Back);
+        motor.setLeftDirection(Motor::Front);
+        motor.setLeftSpeed(MOTOR_TURN_SPEED);
+        motor.setRightSpeed(MOTOR_TURN_SPEED);
+      } while (!(sensors == 0b00111100));
+      break;
+    case T:
+      if (junctionsTraversed[choiceJunction] == 'L')
+      {
         do
         {
           qtr.readLine(sensorValues);
@@ -558,8 +605,9 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
           motor.setRightSpeed(MOTOR_TURN_SPEED);
 
         } while (!(sensors == 0b01111000));
-        break;
-      case R:
+      }
+      else if (junctionsTraversed[choiceJunction] == 'R')
+      {
         do
         {
           qtr.readLine(sensorValues);
@@ -570,171 +618,143 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
           motor.setLeftSpeed(MOTOR_TURN_SPEED);
           motor.setRightSpeed(MOTOR_TURN_SPEED);
         } while (!(sensors == 0b00111100));
-        break;
-      case T:
+      }
+      ++choiceJunction;
+      break;
+    case RS:
+      do
+      {
+        if (junctionsTraversed[choiceJunction] == 'R')
+        {
+          qtr.readLine(sensorValues);
+          sensors = sensorValuesInBinary();
+
+          motor.setRightDirection(Motor::Back);
+          motor.setLeftDirection(Motor::Front);
+          motor.setLeftSpeed(MOTOR_TURN_SPEED);
+          motor.setRightSpeed(MOTOR_TURN_SPEED);
+        }
+
+      } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S'));
+
+      delay(50);
+
+      do
+      {
+        if (junctionsTraversed[choiceJunction] == 'R')
+        {
+          qtr.readLine(sensorValues);
+          sensors = sensorValuesInBinary();
+
+          motor.setRightDirection(Motor::Back);
+          motor.setLeftDirection(Motor::Front);
+          motor.setLeftSpeed(MOTOR_TURN_SPEED);
+          motor.setRightSpeed(MOTOR_TURN_SPEED);
+        }
+
+      } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S'));
+      ++choiceJunction;
+      break;
+    case LS:
+      do
+      {
         if (junctionsTraversed[choiceJunction] == 'L')
         {
-          do
-          {
-            qtr.readLine(sensorValues);
-            sensors = sensorValuesInBinary();
+          qtr.readLine(sensorValues);
+          sensors = sensorValuesInBinary();
 
-            motor.setLeftDirection(Motor::Back);
-            motor.setRightDirection(Motor::Front);
-            motor.setLeftSpeed(MOTOR_TURN_SPEED);
-            motor.setRightSpeed(MOTOR_TURN_SPEED);
+          motor.setLeftDirection(Motor::Back);
+          motor.setRightDirection(Motor::Front);
+          motor.setLeftSpeed(MOTOR_TURN_SPEED);
+          motor.setRightSpeed(MOTOR_TURN_SPEED);
+        }
 
-          } while (!(sensors == 0b01111000));
+      } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S'));
+
+      delay(50);
+
+      do
+      {
+        if (junctionsTraversed[choiceJunction] == 'L')
+        {
+          qtr.readLine(sensorValues);
+          sensors = sensorValuesInBinary();
+
+          motor.setLeftDirection(Motor::Back);
+          motor.setRightDirection(Motor::Front);
+          motor.setLeftSpeed(MOTOR_TURN_SPEED);
+          motor.setRightSpeed(MOTOR_TURN_SPEED);
+        }
+      } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S'));
+      ++choiceJunction;
+      break;
+    case X:
+
+      do
+      {
+
+        if (junctionsTraversed[choiceJunction] == 'L')
+        {
+          qtr.readLine(sensorValues);
+          sensors = sensorValuesInBinary();
+
+          motor.setLeftDirection(Motor::Back);
+          motor.setRightDirection(Motor::Front);
+          motor.setLeftSpeed(MOTOR_TURN_SPEED);
+          motor.setRightSpeed(MOTOR_TURN_SPEED);
         }
         else if (junctionsTraversed[choiceJunction] == 'R')
         {
-          do
-          {
-            qtr.readLine(sensorValues);
-            sensors = sensorValuesInBinary();
-
-            motor.setRightDirection(Motor::Back);
-            motor.setLeftDirection(Motor::Front);
-            motor.setLeftSpeed(MOTOR_TURN_SPEED);
-            motor.setRightSpeed(MOTOR_TURN_SPEED);
-          } while (!(sensors == 0b00111100));
-        }
-        ++choiceJunction;
-        break;
-      case RS:
-        do
-        {
-          if (junctionsTraversed[choiceJunction] == 'R')
-          {
-            qtr.readLine(sensorValues);
-            sensors = sensorValuesInBinary();
-
-            motor.setRightDirection(Motor::Back);
-            motor.setLeftDirection(Motor::Front);
-            motor.setLeftSpeed(MOTOR_TURN_SPEED);
-            motor.setRightSpeed(MOTOR_TURN_SPEED);
-          }
-
-        } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S'));
-
-        delay(50);
-
-        do
-        {
-          if (junctionsTraversed[choiceJunction] == 'R')
-          {
-            qtr.readLine(sensorValues);
-            sensors = sensorValuesInBinary();
-
-            motor.setRightDirection(Motor::Back);
-            motor.setLeftDirection(Motor::Front);
-            motor.setLeftSpeed(MOTOR_TURN_SPEED);
-            motor.setRightSpeed(MOTOR_TURN_SPEED);
-          }
-
-        } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S'));
-        ++choiceJunction;
-        break;
-      case LS:
-        do
-        {
-          if (junctionsTraversed[choiceJunction] == 'L')
-          {
-            qtr.readLine(sensorValues);
-            sensors = sensorValuesInBinary();
-
-            motor.setLeftDirection(Motor::Back);
-            motor.setRightDirection(Motor::Front);
-            motor.setLeftSpeed(MOTOR_TURN_SPEED);
-            motor.setRightSpeed(MOTOR_TURN_SPEED);
-          }
-
-        } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S'));
-
-        delay(50);
-
-        do
-        {
-          if (junctionsTraversed[choiceJunction] == 'L')
-          {
-            qtr.readLine(sensorValues);
-            sensors = sensorValuesInBinary();
-
-            motor.setLeftDirection(Motor::Back);
-            motor.setRightDirection(Motor::Front);
-            motor.setLeftSpeed(MOTOR_TURN_SPEED);
-            motor.setRightSpeed(MOTOR_TURN_SPEED);
-          }
-        } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S'));
-        ++choiceJunction;
-        break;
-      case X:
-
-        do
-        {
-
-          if (junctionsTraversed[choiceJunction] == 'L')
-          {
-            qtr.readLine(sensorValues);
-            sensors = sensorValuesInBinary();
-
-            motor.setLeftDirection(Motor::Back);
-            motor.setRightDirection(Motor::Front);
-            motor.setLeftSpeed(MOTOR_TURN_SPEED);
-            motor.setRightSpeed(MOTOR_TURN_SPEED);
-          }
-          else if (junctionsTraversed[choiceJunction] == 'R')
-          {
-            qtr.readLine(sensorValues);
-            sensors = sensorValuesInBinary();
-
-            motor.setRightDirection(Motor::Back);
-            motor.setLeftDirection(Motor::Front);
-            motor.setLeftSpeed(MOTOR_TURN_SPEED);
-            motor.setRightSpeed(MOTOR_TURN_SPEED);
-          }
-        } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S'));
-
-        delay(50);
-
-        do
-        {
           qtr.readLine(sensorValues);
           sensors = sensorValuesInBinary();
 
-          motor.setLeftDirection(Motor::Back);
-          motor.setRightDirection(Motor::Front);
+          motor.setRightDirection(Motor::Back);
+          motor.setLeftDirection(Motor::Front);
           motor.setLeftSpeed(MOTOR_TURN_SPEED);
           motor.setRightSpeed(MOTOR_TURN_SPEED);
-
-        } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S'));
-        choiceJunction++;
-        break;
-      case END:
-        do
-        {
-          qtr.readLine(sensorValues);
-          sensors = sensorValuesInBinary();
-
-          motor.setLeftDirection(Motor::Back);
-          motor.setRightDirection(Motor::Front);
-          motor.setLeftSpeed(MOTOR_TURN_SPEED);
-          motor.setRightSpeed(MOTOR_TURN_SPEED);
-
-        } while (!(sensors == 0b01111000));
-
-        break;
-
-      case FINISH:
-        stopCar(10);
-        while (1)
-        {
-          digitalWrite(redLED, HIGH);
-          delay(750);
-          digitalWrite(redLED, LOW);
-          delay(750);
         }
-        break;
+      } while ((sensors == 0b00111100) && (junctionsTraversed[choiceJunction] != 'S'));
+
+      delay(50);
+
+      do
+      {
+        qtr.readLine(sensorValues);
+        sensors = sensorValuesInBinary();
+
+        motor.setLeftDirection(Motor::Back);
+        motor.setRightDirection(Motor::Front);
+        motor.setLeftSpeed(MOTOR_TURN_SPEED);
+        motor.setRightSpeed(MOTOR_TURN_SPEED);
+
+      } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S'));
+      choiceJunction++;
+      break;
+    case END:
+      do
+      {
+        qtr.readLine(sensorValues);
+        sensors = sensorValuesInBinary();
+
+        motor.setLeftDirection(Motor::Back);
+        motor.setRightDirection(Motor::Front);
+        motor.setLeftSpeed(MOTOR_TURN_SPEED);
+        motor.setRightSpeed(MOTOR_TURN_SPEED);
+
+      } while (!(sensors == 0b01111000));
+
+      break;
+
+    case FINISH:
+      stopCar(10);
+      while (1)
+      {
+        digitalWrite(redLED, HIGH);
+        delay(750);
+        digitalWrite(redLED, LOW);
+        delay(750);
+      }
+      break;
     }
   }
 }
