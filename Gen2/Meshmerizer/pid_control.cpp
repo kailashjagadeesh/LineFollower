@@ -1,6 +1,6 @@
 #include "pid_control.h"
 
-#define convFactor 100.0f
+#define convFactor 100.0f  // Factor for scaling O/P from sensor to feed PID algo
 
 PIDControl::PIDControl(uint16_t _targetValue)
 {
@@ -13,12 +13,15 @@ PIDControl::PIDControl(uint16_t _targetValue)
     kd = parameters + 1;
     ki = parameters + 2;
 
-    parameters[0] = 5.0;
+    parameters[0] = 5.0;  // Hard coded PID values
     parameters[1] = 4.35;
     parameters[2] = 0.00;
 
     /*
         Best values so far 
+        5.00
+        4.35
+        0.00
 
         4.85
         4.35
