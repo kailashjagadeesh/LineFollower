@@ -106,11 +106,11 @@ void PID_tune() // Auto tune implemented using twiddle algorithm (gradient desce
 void waitForButtonPress()    // After calibration is done yellow light swithces off
 {                            // Short press will start the bot with LEFT major algorithm
   digitalWrite(yellowLED, LOW);   // Pressing button TILL Yellow LED glows up again will start bot with RIGHT major algorithm 
-  while (digitalRead(button) == 1)
+  while (digitalRead(button) == HIGH )
     ;
   int pressStartTime = millis();
 
-  while (digitalRead(button) == 0)
+  while (digitalRead(button) == LOW)
   {
     if (millis() - pressStartTime >= BUTTON_PRESS_DELAY)
       digitalWrite(yellowLED, HIGH);
@@ -762,9 +762,8 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
 void ShortestPath(char *PathTraversed)
 {
   FilterPath(PathTraversed);
-#ifdef LEFT_LOGIC
-  SimplifyPath(PathTraversed, 'L');
-#else
-  SimplifyPath(PathTraversed, 'R');
-#endif
+  if( algorithm == LEFT_LOGIC)
+    SimplifyPath(PathTraversed, 'L');
+  else
+    SimplifyPath(PathTraversed, 'R');
 }
