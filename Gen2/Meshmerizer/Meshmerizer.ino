@@ -1,4 +1,3 @@
-
 #define LF_WHITELINE_LOGIC
 
 #include "QTRSensorsAnalog.h"
@@ -216,7 +215,7 @@ void junctionDetect() // Detects any junction and calls junction control
   {
     j = L;
   }
-  else if ((sensors & 0b11011111) == 0b00011111)
+  else if ((sensors & 0b10011111) == 0b00011111)
   {
     j = R;
   }
@@ -241,6 +240,7 @@ void junctionDetect() // Detects any junction and calls junction control
   if ((sensors & 0b10000001) == 0b10000001)
   {
     j = T;
+    digitalWrite(yellowLED, !digitalRead(yellowLED));
   }
   else if ((sensors & 0b11111001) == 0b11111000)
   {
@@ -253,6 +253,8 @@ void junctionDetect() // Detects any junction and calls junction control
   else if (sensors == 0b00000000)
   {
     j = END;
+    junctionControl(j, Mode);
+    return;
   }
   else
   {
@@ -266,14 +268,19 @@ void junctionDetect() // Detects any junction and calls junction control
   motor.setRightSpeed(MOTOR_TURN_SPEED);
 
   delay(JUNCTION_OVERSHOOT_DELAY);
-  stopCar(300);
+  stopCar(200);
 
   qtr.readLine(sensorValues);
   sensors = sensorValuesInBinary();
 
   if (((sensors & 0b00111100) == 0b00111100) || ((sensors & 0b00111000) == 0b00111000) || ((sensors & 0b00011100) == 0b00011100))
   {
+    if(j != T)
+    {
+      digitalWrite(yellowLED, !digitalRead(yellowLED));
+    }
     j += 3;
+    
   }
   if ((sensors & 0b10000001) == 0b10000001)
   {
@@ -286,7 +293,6 @@ void junctionDetect() // Detects any junction and calls junction control
 void junctionControl(Junction J, mode m) // Take appropriate action based on the junction detected
 {
   bluetooth.println(juncs[J]);
-  digitalWrite(yellowLED, !digitalRead(yellowLED));
   uint8_t sensors;
   if (m == DRY_RUN)
   {
@@ -320,6 +326,7 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
         } while (!(sensors == 0b00111100));
         break;
       case T:
+        
         do
         {
           qtr.readLine(sensorValues);
@@ -329,6 +336,7 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
           motor.setRightDirection(Motor::Front);
           motor.setLeftSpeed(MOTOR_TURN_SPEED);
           motor.setRightSpeed(MOTOR_TURN_SPEED);
+
 
         } while (!(sensors == 0b01111000));
         strcat(junctionsTraversed, "L");
@@ -467,7 +475,6 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
           motor.setLeftSpeed(MOTOR_TURN_SPEED);
           motor.setRightSpeed(MOTOR_TURN_SPEED);
         } while (!(sensors == 0b00111100));
-
         strcat(junctionsTraversed, "R");
         break;
 
@@ -687,6 +694,7 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
         }
       } while ((!(sensors == 0b00111100)) && (junctionsTraversed[choiceJunction] != 'S'));
       ++choiceJunction;
+
       break;
     case X:
 
@@ -755,6 +763,9 @@ void junctionControl(Junction J, mode m) // Take appropriate action based on the
         delay(750);
       }
       break;
+    }
+    if (junctionsTraversed[choiceJunction] == 0) {
+      m = DRY_RUN;
     }
   }
 }

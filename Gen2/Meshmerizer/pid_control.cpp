@@ -13,7 +13,7 @@ PIDControl::PIDControl(uint16_t _targetValue)
     kd = parameters + 1;
     ki = parameters + 2;
 
-    parameters[0] = 4.85;
+    parameters[0] = 5.0;
     parameters[1] = 4.35;
     parameters[2] = 0.00;
 
