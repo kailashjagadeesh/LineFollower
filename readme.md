@@ -1,7 +1,8 @@
-#ABOUT
+# About
 A general purpose differential-drive bot that can be used for various events.
 
-#Code base tree
+# Code base tree
+```
 .
 │── Gen1 : Meshmerize 2018 zonals, IITB TechFest
 │   ├── actualrun
@@ -27,4 +28,4 @@ A general purpose differential-drive bot that can be used for various events.
     └── Designs
         ├── sensorsPCB : 9 IR sensor PCB board with 3 control pins for controlling IR TX  
         └── shieldPCB
-
+```
