@@ -1,0 +1,68 @@
+*Pick And Place List
+*Company=
+*Author=
+*eMail=
+*
+*Project=sensors
+*Date=16:34:36
+*CreatedBy=Fritzing 0.9.3b.04.19.5c895d327c44a3114e5fcc9d8260daf0cbb52806
+*
+*
+*Coordinates in mm, always center of component
+*Origin 0/0=Lower left corner of PCB
+*Rotation in degree (0-360, math. pos.)
+*
+*No;Value;Package;X;Y;Rotation;Side;Name
+1;;;69.8595;-8.34906;0;Bottom;Jumper21
+2;10k;THT;50.8095;-15.9691;-90;Bottom;R2
+3;;;88.9095;-23.5891;0;Bottom;Jumper9
+4;10k;THT;60.9695;-15.9691;-90;Bottom;R6
+5;;3 mm [THT];10.1693;-26.8201;0;Bottom;T0
+6;;3 mm [THT];104.149;-26.8201;0;Bottom;R8
+7;10k;THT;45.7295;-15.9691;-90;Bottom;R0
+8;10k;THT;55.8895;-15.9691;-90;Bottom;R4
+9;;3 mm [THT];88.9093;-26.8201;0;Bottom;R7
+10;;3 mm [THT];57.1593;-57.3001;0;Bottom;R4
+11;;;13.9795;-18.5091;0;Bottom;Jumper1
+12;;to-92;78.8384;-10.8891;-90;Bottom;Q1
+13;10k;THT;48.2695;-15.9691;-90;Bottom;R1
+14;;3 mm [THT];64.7793;-42.0601;0;Bottom;R5
+15;;3 mm [THT];53.1594;-57.3001;0;Bottom;T4
+16;;;20.3295;-23.5891;0;Bottom;Jumper3
+17;;3 mm [THT];80.0193;-36.9801;0;Bottom;R6
+18;;3 mm [THT];34.2993;-36.9801;0;Bottom;T2
+19;;;3.81945;-33.7491;0;Bottom;Jumper15
+20;;;3.81945;-9.61906;0;Bottom;Jumper16
+21;;3 mm [THT];6.35931;-26.8201;0;Bottom;R0
+22;10k;THT;58.4295;-15.9691;-90;Bottom;R5
+23;;;76.2095;-43.9091;0;Bottom;Jumper12
+24;;;45.0945;-37.5591;0;Bottom;Jumper6
+25;;3 mm [THT];85.0993;-26.8201;0;Bottom;T7
+26;330;THT;31.7595;-12.1591;0;Bottom;R9
+27;;;55.8895;-47.7191;0;Bottom;Jumper14
+28;;;88.9095;-36.2891;0;Bottom;Jumper11
+29;;3 mm [THT];20.3293;-26.8201;0;Bottom;R1
+30;;THT;55.8895;-5.80906;-90;Bottom;Power
+31;;;66.0495;-47.7191;0;Bottom;Jumper18
+32;;;29.8545;-59.1491;0;Bottom;Jumper17
+33;;3 mm [THT];49.5393;-42.0601;0;Bottom;T3
+34;;THT;55.8895;-23.5891;-90;Bottom;R0-8
+35;;;34.2995;-31.8441;0;Bottom;Jumper5
+36;10k;THT;66.0495;-15.9691;-90;Bottom;R8
+37;;3 mm [THT];60.7794;-42.0601;0;Bottom;T5
+38;;3 mm [THT];45.7293;-42.0601;0;Bottom;R3
+39;;3 mm [THT];30.4893;-36.9801;0;Bottom;R2
+40;10k;THT;53.3495;-15.9691;-90;Bottom;R3
+41;;;13.9795;-33.1141;0;Bottom;Jumper4
+42;;;57.1595;-38.8291;0;Bottom;Jumper2
+43;;;64.7795;-38.8291;0;Bottom;Jumper7
+44;;to-92;20.2406;-4.53906;180;Bottom;Q2
+45;;3 mm [THT];100.339;-26.8201;0;Bottom;T8
+46;;;104.149;-36.2891;0;Bottom;Jumper10
+47;10k;THT;63.5095;-15.9691;-90;Bottom;R7
+48;;;76.2095;-31.2091;0;Bottom;Jumper8
+49;;3 mm [THT];76.0194;-36.9801;0;Bottom;T6
+50;;;31.7595;-55.3391;0;Bottom;Jumper20
+51;;;35.5695;-48.3541;0;Bottom;Jumper13
+52;;3 mm [THT];24.1393;-26.8201;0;Bottom;T1
+53;;;55.8895;-52.7991;0;Bottom;Jumper19
