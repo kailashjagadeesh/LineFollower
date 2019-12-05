@@ -9,4 +9,30 @@ D8 - BIN 2
 D7 - PWM B
 
 
+D6 - A0
+D5 - A1
+D4 - A2
+D3 - A3
+D40 - A4
+D28 - A5
+D30 - A6
+D26 - A7
+D32 - A8
+D38 - A9
+D34 - A10
+D36 - A11
+
+
+
+Bluetooth: 
+TX-1 : TX
+RX-1 : RX
+
+
+
+Push buttons:
+D2, D50
+
+LEDs :
+D15,D14
 
