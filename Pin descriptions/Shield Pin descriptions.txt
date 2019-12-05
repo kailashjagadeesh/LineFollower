@@ -1,0 +1,12 @@
+Motor Pins on MCU:
+
+D12 - PWM A
+D11 - AIN 2
+D10 - AIN 1
+D13 - STBY
+D9 - BIN 1
+D8 - BIN 2
+D7 - PWM B
+
+
+
