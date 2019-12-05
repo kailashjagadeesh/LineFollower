@@ -1,9 +1,10 @@
+#include <TimerOne.h>
 #include <Grove_Motor_Driver_TB6612FNG.h>
 #include <I2Cdev.h>
 
-#include <TimerOne.h>
-
 #define intr_count90 100;
+#define voltage_scale_factor 3.3f/5.0f
+
 volatile unsigned int counter_left = 0;
 volatile unsigned int counter_right = 0;
 
@@ -38,7 +39,7 @@ void left_90()
   digitalWrite(dpin4, HIGH);
   if(temp_count < counter_left + intr_count90)
   {
-    analogWrite(pwm_pin1,255);
+    analogWrite(pwm_pin1,255* voltage_scale_factor);
     left_90();
   }
 }
@@ -55,10 +56,19 @@ void right_90()
   digitalWrite(dpin4, LOW);
   if(temp_count < counter_left + intr_count90)
   {
-    analogWrite(pwm_pin2,255);
+    analogWrite(pwm_pin2,255 * voltage_scale_factor);
     right_90();
   }
 }
+
+void forward()
+{
+
+  digitalWrite(dpin1, HIGH);
+  digitalWrite(dpin2, LOW);
+ 
+  digitalWrite(dpin3, HIGH);
+  digitalWrite(dpin4, LOW);
 
 void timerIsr()
 { 
@@ -92,12 +102,16 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(3), docount_right, RISING);  // increase counter when speed sensor pin goes High
   Timer1.attachInterrupt( timerIsr ); // enable the timer
 
-  left_90();
-  delay(1000);
-  right_90();
+ 
 }
 
 
 void loop() {
+ forward();
+ delay(1000);
+ left_90();
+ delay(1000);
+ right_90();
+ delay(1000);
 
 }
