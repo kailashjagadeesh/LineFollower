@@ -1,4 +1,4 @@
-#include <TimerOne.h>
+                      #include <TimerOne.h>
 
 #define interrupt_count90 90
 #define interrupt_count180 150
@@ -140,11 +140,11 @@ void loop() {
  delay(250); //hold for 250ms until move again 
 
 
- /*turn(90,'r');
+ turn(90,'r');
  stop(); //stop
  delay(250); //hold for 250ms until move again
  
-   /*forward();
+  forward();
  delay(1000);
  stop(); //stop
  delay(250); //hold for 250ms until move again  
@@ -161,5 +161,5 @@ void loop() {
 
   turn(360,'l');
  stop(); //stop
- delay(250); //hold for 250ms until move again */
+ delay(250); //hold for 250ms until move again 
  }
