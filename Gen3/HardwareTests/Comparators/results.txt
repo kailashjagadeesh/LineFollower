@@ -1,0 +1,20 @@
+Checking analog value results: 
+    tested using Arduino Mega
+    All ok!
+
+Checking digital value results:
+    tested using arduino Mega
+    DAC is set to on-board 3.3V
+
+    observation: OPAMPS outputs are 2.8~ when HIGH (Mega reads that as LOW)
+
+    Therefore checking, voltage using multimeter and analog reads
+    Result: 
+        * All opamps get proper voltage for comparison
+        * Outputs of opamps (3.3v comparison value)
+            all ok!
+            for 0v i/p, o/p = 0v
+            for 5v i/p, o/p = 2.10v 
+
+            The results were cross verified using analog reads at corresponding digital pins (using jumpers)
+            approx 437 was read.
