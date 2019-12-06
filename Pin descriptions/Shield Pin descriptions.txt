@@ -36,3 +36,7 @@ D2, D50
 LEDs :
 D15,D14
 
+Ultrasonic slot Pins:
+
+Trigger - D22
+Echo - D24
