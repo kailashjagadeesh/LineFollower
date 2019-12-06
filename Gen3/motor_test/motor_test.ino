@@ -1,5 +1,3 @@
-#include <Stepper.h>
-
 #include <TimerOne.h>
 
 
