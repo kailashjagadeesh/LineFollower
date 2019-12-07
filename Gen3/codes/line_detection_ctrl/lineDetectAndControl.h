@@ -49,7 +49,7 @@ Algorithm algorithm;
 char data[9];
 uint8_t choiceJunction = 0;
 char junctionsTraversed[25] = ""; // Holds all the choices taken so far
-
+Ultrasonic ultrasonic;
 void junctionControl(Junction J, mode m) // Take appropriate action based on the junction detected
 {
   uint8_t backSensors;
@@ -660,6 +660,7 @@ to either PID or junctionControl() for turning in junctions.
 int findAndAct(mode m)
 {
   uint8_t backSensorStateInverted = (backSensorState * 0x0202020202ULL & 0x010884422010ULL) % 1023; // Contains backSensorState's mirror inversion
+  blockDetectFlag =  ultrasonic.detectBlock();
   // Block detected condition
   if (blockDetectFlag == 1)
   {
