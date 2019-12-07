@@ -77,7 +77,14 @@ void Sensors::printSensorReadings()
 //calibration of the DAC value
 void Sensors::calibrate()
 {
-    uint8_t tempH = 0, tempL = 0;
+    //keeping track of number of values
+    uint8_t tempH[12], tempL[12];
+    for (int i = 0; i < 12; i++)
+    {
+        tempH[i] = 0;
+        tempL[i] = 0;
+    }
+
     //read analog values over 100 times
     for (int i = 0; i < 100; i++)
     {
@@ -88,12 +95,12 @@ void Sensors::calibrate()
             if (analogReadings[j] >= CLASSIFICATION_THRESHOLD)
             {
                 calibratedHighValues[j] += analogReadings[j];
-                tempH++;
+                tempH[j]++;
             }
             else
             {
                 calibratedLowValues[j] += analogReadings[j];
-                tempL++;
+                tempL[j]++;
             }
         }
 
@@ -103,8 +110,8 @@ void Sensors::calibrate()
 
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-        calibratedHighValues[i] /= tempH;
-        calibratedLowValues[i] /= tempL;
+        calibratedHighValues[i] /= tempH[i];
+        calibratedLowValues[i] /= tempL[i];
     }
 
     //setting the DAC values of the average of the average of high and low means
@@ -157,7 +164,14 @@ void Sensors::readSensors()
 
 uint16_t Sensors::readLine()
 {
-    //TODO
+    uint16_t sum[2] = {0, 0};
+    readSensorsAnalog();
+    for (int i = 0; i < NUM_SENSORS;++i) {
+        sum[0] += analogReadings[i] * i * 1000;
+        sum[1] += analogReadings[i];
+    }
+
+    return sum[0] / sum[1];
 }
 
 #endif
