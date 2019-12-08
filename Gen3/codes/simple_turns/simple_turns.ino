@@ -1,8 +1,6 @@
-                      #include <TimerOne.h>
-
-#define interrupt_count90 90
-#define interrupt_count180 150
-#define interrupt_count360 300 
+#define interrupt_count90 350
+#define interrupt_count180 680
+#define interrupt_count360 1305
 
 volatile unsigned int counter_left = 0;
 volatile unsigned int counter_right = 0;
@@ -14,18 +12,22 @@ int dpin2 = 11;
 
 //Right Motor
 int pwm_pin2=7;
-int dpin3= 9;
-int dpin4= 8;
+int dpin4= 9;
+int dpin3= 8;
 
 int STBY=13; //Standby pin on the motor driver
 
 void docount_left()  // counts from the speed sensor for left motor
 {
       counter_left++;
+     /* Serial.print("Left Motor Count: ");
+      Serial.println(counter_left);*/
 }
 void docount_right() // counts from the speed sensor for right motor
 {
       counter_right++;
+     /* Serial.print("Right motor count: ");
+      Serial.println(counter_right);*/
 }
 
 void turn(int angle, char dir)
@@ -67,12 +69,14 @@ void turn(int angle, char dir)
   {
   if(counter_right <interrupt_count)
     analogWrite(pwm_pin1,255 );
-  else
+  else{
     stop();
+    }
   if(counter_left < interrupt_count)
     analogWrite(pwm_pin2,255 );
-  else
+  else{
     stop();
+    }
    } 
  }
 
@@ -96,9 +100,9 @@ void stop(){
 digitalWrite(STBY, LOW);
 }
 
-void timerIsr()
+/* void timerIsr()
 { 
-  Timer1.detachInterrupt();  //stop the timer
+  //////timer1.detachInterrupt();  //stop the timer
   
   Serial.print("Left motor Interrupt count is:");
   Serial.println(counter_left, DEC); 
@@ -107,8 +111,8 @@ void timerIsr()
   Serial.print("Right motor Interrupt count is:");
   Serial.println(counter_right, DEC); 
    //enable the timer
-   Timer1.attachInterrupt( timerIsr ); 
-}
+   ////timer1.attachInterrupt( timerIsr ); 
+} */
 
 void setup()
 {
@@ -124,30 +128,27 @@ void setup()
   pinMode(pwm_pin2, OUTPUT);
   pinMode(dpin3, OUTPUT);
   pinMode(dpin4,OUTPUT);
-  
-  Timer1.initialize(1000000); // set timer for 1sec
-  attachInterrupt(digitalPinToInterrupt(2), docount_left, RISING);  // increase counter when speed sensor pin goes High
-  attachInterrupt(digitalPinToInterrupt(3), docount_right, RISING);  // increase counter when speed sensor pin goes High
-  Timer1.attachInterrupt( timerIsr ); // enable the timer
+  attachInterrupt(digitalPinToInterrupt(31), docount_left, RISING);  // increase counter when speed sensor pin goes High
+  attachInterrupt(digitalPinToInterrupt(33), docount_right, RISING);  // increase counter when speed sensor pin goes High
 
 }
 
 void loop() {
 
-   forward();
- delay(1000);
+  forward();
+   delay(1000);
  stop(); //stop
- delay(250); //hold for 250ms until move again 
+ delay(250); //hold for 250ms until move again */
+ 
+  turn(90,'r');
+ stop();
+ delay(250);
 
-
- turn(90,'r');
- stop(); //stop
- delay(250); //hold for 250ms until move again
  
   forward();
  delay(1000);
  stop(); //stop
- delay(250); //hold for 250ms until move again  
+ delay(250); //hold for 250ms until move again
 
 
  turn(180,'l');
