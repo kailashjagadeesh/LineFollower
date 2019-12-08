@@ -18,8 +18,8 @@ class Sensors
 
 public:
     //read values
-    void readSensorsAnalog();
-    void readSensorsDigital();
+    void readAnalog();
+    void readDigital();
     void readSensors();
 
     //callibration (set DAC Values)
@@ -32,12 +32,14 @@ public:
 
     //debug info
     void printDebugInfo();
-    void printSensorReadings();
+    void printAnalogReadings();
+    void printDigitalReadings();
 };
 
 //pin definitions
-const uint8_t Sensors::analogPins[12] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
-const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 40, 28, 30, 26, 32, 38, 34, 36};
+const uint8_t Sensors::analogPins[12] = {A0, A1, A2, A3, A11, A5, A6, A7, A8, A9, A10, A4}; 
+const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 30, 26, 32, 38, 34, 40}; //avoiding pins 34 and 40
+
 
 //debug
 void Sensors::printDebugInfo()
@@ -57,16 +59,20 @@ void Sensors::printDebugInfo()
     }
 }
 
-void Sensors::printSensorReadings()
+void Sensors::printAnalogReadings()
 {
-    Serial.print("\n\nSENSOR READINGS [Analog]: ");
+    Serial.print("\n\nAnalog: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
         Serial.print(analogReadings[i]);
         Serial.print("\t");
     }
+}
 
-    Serial.print("\n\nSENSOR READINGS [Digital]: ");
+void Sensors::printDigitalReadings()
+{
+
+    Serial.print("\n\nDigital: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
         Serial.print(digitalReadings[i]);
@@ -88,7 +94,7 @@ void Sensors::calibrate()
     //read analog values over 100 times
     for (int i = 0; i < 100; i++)
     {
-        readSensorsAnalog();
+        readAnalog();
 
         for (int j = 0; i < NUM_SENSORS; j++)
         {
@@ -121,7 +127,7 @@ void Sensors::calibrate()
         temp += calibratedHighValues[i] + calibratedLowValues[i];
     }
 
-    analogWrite(DAC0, temp / NUM_SENSORS);
+    //analogWrite(DAC0, temp / NUM_SENSORS);
 }
 
 Sensors::Sensors()
@@ -137,7 +143,7 @@ Sensors::Sensors()
     }
 }
 
-void Sensors::readSensorsAnalog()
+void Sensors::readAnalog()
 {
     for (int i = 0; i < NUM_SENSORS; i++)
     {
@@ -145,7 +151,7 @@ void Sensors::readSensorsAnalog()
     }
 }
 
-void Sensors::readSensorsDigital()
+void Sensors::readDigital()
 {
     for (int i = 0; i < NUM_SENSORS; i++)
     {
@@ -165,7 +171,7 @@ void Sensors::readSensors()
 uint16_t Sensors::readLine()
 {
     uint16_t sum[2] = {0, 0};
-    readSensorsAnalog();
+    readAnalog();
     for (int i = 0; i < NUM_SENSORS;++i) {
         sum[0] += analogReadings[i] * i * 1000;
         sum[1] += analogReadings[i];
