@@ -16,7 +16,7 @@ void setup() {
 }
 
 void loop() {
-/**/    
+/*    
     Serial.print("\nAnalog:\t\t");
 
     for (int i = 0; i < 12; i++) {
