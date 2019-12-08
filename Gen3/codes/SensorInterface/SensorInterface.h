@@ -44,7 +44,8 @@ public:
 
     //debug info
     void printDebugInfo();
-    void printSensorReadings();
+    void printAnalogReadings();
+    void printDigitalReadings();
 };
 
 //pin definitions
@@ -82,16 +83,20 @@ void Sensors::printDebugInfo()
     }
 }
 
-void Sensors::printSensorReadings()
+void Sensors::printAnalogReadings()
 {
-    Serial.print("\n\nSENSOR READINGS [Analog]: ");
+    Serial.print("\n\nAnalog: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
         Serial.print(analogReadings[i]);
         Serial.print("\t");
     }
+}
 
-    Serial.print("\n\nSENSOR READINGS [Digital]: ");
+void Sensors::printDigitalReadings()
+{
+
+    Serial.print("\n\nDigital: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
         Serial.print(digitalReadings[i]);
@@ -113,7 +118,7 @@ void Sensors::calibrate()
     //read analog values over 100 times
     for (int i = 0; i < 100; i++)
     {
-        readSensorsAnalog();
+        readAnalog();
 
         for (int j = 0; i < NUM_SENSORS; j++)
         {
@@ -146,7 +151,7 @@ void Sensors::calibrate()
         temp += calibratedHighValues[i] + calibratedLowValues[i];
     }
 
-    analogWrite(DAC0, temp / NUM_SENSORS);
+    //analogWrite(DAC0, temp / NUM_SENSORS);
 }
 
 Sensors::Sensors()
@@ -162,7 +167,7 @@ Sensors::Sensors()
     }
 }
 
-void Sensors::readSensorsAnalog()
+void Sensors::readAnalog()
 {
     for (int i = 0; i < NUM_SENSORS; i++)
     {

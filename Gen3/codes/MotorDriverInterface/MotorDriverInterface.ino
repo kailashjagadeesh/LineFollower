@@ -3,10 +3,13 @@
 
 Motor motor;
 
-#define TESTDELAY 3000
+#define TESTDELAY 5000
 
 void setup() {
     Serial.begin(9600);
+    Serial.println("Waiting...");
+    delay(TESTDELAY);
+
     Serial.println ("Motor driver testing routine:");
     motor.stopMotors();
 
