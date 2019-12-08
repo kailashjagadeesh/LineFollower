@@ -11,10 +11,9 @@
     } 
 
 
-typedef void (*testFunctionSetup) (void);
-typedef void (*testFunctionLoop) (void);
+typedef void (*testFunction) (void);
 
-void runTest(testFunctionSetup funcs[], int n) {
+void runTest(testFunction funcs[], int n) {
     for (int i = 0; i < n; i++)
         funcs[i]();
 }
