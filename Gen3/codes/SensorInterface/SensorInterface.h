@@ -44,12 +44,13 @@ public:
 
     //debug info
     void printDebugInfo();
-    void printSensorReadings();
+    void printAnalogReadings();
+    void printDigitalReadings();
 };
 
 //pin definitions
-const uint8_t Sensors::analogPins[12] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
-const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 40, 28, 30, 26, 32, 38, 34, 36};
+const uint8_t Sensors::analogPins[12]  = {A0, A1, A2, A3, A11, A5, A6, A7, A8, A10,  A9, A4};
+const uint8_t Sensors::digitalPins[12] = { 6,  5,  4,  3,  36, 28, 30, 26, 32,  34,  36, 40};
 void Sensors::attachAllInterrupts()
 {
     attachInterrupt(digitalPinToInterrupt(CFPin), CFISR, CHANGE);
@@ -82,16 +83,20 @@ void Sensors::printDebugInfo()
     }
 }
 
-void Sensors::printSensorReadings()
+void Sensors::printAnalogReadings()
 {
-    Serial.print("\n\nSENSOR READINGS [Analog]: ");
+    Serial.print("\n\nAnalog: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
         Serial.print(analogReadings[i]);
         Serial.print("\t");
     }
+}
 
-    Serial.print("\n\nSENSOR READINGS [Digital]: ");
+void Sensors::printDigitalReadings()
+{
+
+    Serial.print("\n\nDigital: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
         Serial.print(digitalReadings[i]);
@@ -146,7 +151,7 @@ void Sensors::calibrate()
         temp += calibratedHighValues[i] + calibratedLowValues[i];
     }
 
-    analogWrite(DAC0, temp / NUM_SENSORS);
+    //analogWrite(DAC0, temp / NUM_SENSORS);
 }
 
 Sensors::Sensors()

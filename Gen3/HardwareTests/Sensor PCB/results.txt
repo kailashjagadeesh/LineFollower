@@ -1,0 +1,2 @@
+All sensors work nicely except for the middle sensor.
+Concluded fault: the photodiode is probably faulty
