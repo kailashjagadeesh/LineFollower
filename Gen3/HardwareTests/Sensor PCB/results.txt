@@ -1,2 +1,17 @@
 All sensors work nicely except for the middle sensor.
 Concluded fault: the photodiode is probably faulty
+
+--
+
+analog value calibration
+
+WHITE:
+MAX VALUES:	389	348	352	350	9	454	313	417	365	
+MIN VALUES:	378	340	345	344	7	447	307	410	359	
+AVG VALUES:	383	344	348	347	8	450	310	413	362	
+
+
+BLACK:
+MAX VALUES:	67	73	104	314	8	419	259	114	70	
+MIN VALUES:	65	71	102	309	6	412	254	111	69	
+AVG VALUES:	66	72	103	311	7	415	256	112	69

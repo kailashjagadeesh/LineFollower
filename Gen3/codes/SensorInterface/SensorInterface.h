@@ -19,14 +19,18 @@ class Sensors
 {
     //ds to strore the readings
     uint16_t analogReadings[12];
-    uint16_t calibratedHighValues[12];
-    uint16_t calibratedLowValues[12];
 
     //pin definitions
     static const uint8_t analogPins[12];
     static const uint8_t digitalPins[12];
 
 public:
+    struct calibratedValues{
+        uint16_t highValues[NUM_SENSORS];
+        uint16_t lowValues[NUM_SENSORS];
+        uint16_t averageValues[NUM_SENSORS];
+    } whiteValues, blackValues;
+
     uint16_t digitalReadings[12];
     void attachAllInterrupts();
     //read values
@@ -43,7 +47,7 @@ public:
     Sensors();
 
     //debug info
-    void printDebugInfo();
+    void printCalibratedInfo();
     void printAnalogReadings();
     void printDigitalReadings();
 };
@@ -66,19 +70,46 @@ void Sensors::attachAllInterrupts()
     attachInterrupt(digitalPinToInterrupt(RB2Pin), RB2ISR, CHANGE);
 }
 //debug
-void Sensors::printDebugInfo()
+void Sensors::printCalibratedInfo()
 {
-    Serial.println("SENSOR CALIBRATED VALUES [HIGH]:");
-    for (int i = 0; i < NUM_SENSORS; i++)
+    Serial.println("Calibrated values: \n");
+    Serial.println("WHITE:");
+    Serial.print("MAX VALUES:\t");
+    for (int i = 0 ; i < NUM_SENSORS; ++i)
     {
-        Serial.print(calibratedHighValues[i]);
+        Serial.print(whiteValues.highValues[i]);
+        Serial.print("\t");
+    }
+    Serial.print("\nMIN VALUES:\t");
+    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    {
+        Serial.print(whiteValues.lowValues[i]);
+        Serial.print("\t");
+    }
+    Serial.print("\nAVG VALUES:\t");
+    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    {
+        Serial.print(whiteValues.averageValues[i]);
         Serial.print("\t");
     }
 
-    Serial.println("\n\nSENSOR CALIBRATED VALUES [LOW]:");
-    for (int i = 0; i < NUM_SENSORS; i++)
+    Serial.println("\n\n\nBLACK:");
+    Serial.print("MAX VALUES:\t");
+    for (int i = 0 ; i < NUM_SENSORS; ++i)
     {
-        Serial.print(calibratedLowValues[i]);
+        Serial.print(blackValues.highValues[i]);
+        Serial.print("\t");
+    }
+    Serial.print("\nMIN VALUES:\t");
+    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    {
+        Serial.print(blackValues.lowValues[i]);
+        Serial.print("\t");
+    }
+    Serial.print("\nAVG VALUES:\t");
+    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    {
+        Serial.print(blackValues.averageValues[i]);
         Serial.print("\t");
     }
 }
@@ -104,6 +135,47 @@ void Sensors::printDigitalReadings()
     }
 }
 
+void Sensors::calibrate() {
+    //clear the readings
+    for (int i = 0; i < NUM_SENSORS; i++) {
+        whiteValues.highValues[i] = whiteValues.lowValues[i] = 0;
+        blackValues.highValues[i] = blackValues.lowValues[i] = 0;
+    }
+
+    Serial.println("Keep on white surface");
+    delay(5000);
+    for (int i = 0; i < 100; i++) {
+        readSensorsAnalog();
+        for (int j = 0; j < NUM_SENSORS; ++j) {
+            if (analogReadings[j] > whiteValues.highValues[j])
+                whiteValues.highValues[j] = analogReadings[j];
+            
+            if (i == 0 || analogReadings[j] < whiteValues.lowValues[j])
+                whiteValues.lowValues[j] = analogReadings[j];
+        }
+    }
+
+    Serial.println("Keep on black surface");
+    delay(5000);
+    for (int i = 0; i < 100; i++) {
+        readSensorsAnalog();
+        for (int j = 0; j < NUM_SENSORS; ++j) {
+            if (analogReadings[j] > blackValues.highValues[j])
+                blackValues.highValues[j] = analogReadings[j];
+            
+            if (i == 0 || analogReadings[j] < blackValues.lowValues[j])
+                blackValues.lowValues[j] = analogReadings[j];
+        }
+    }
+
+    for (int i = 0; i < NUM_SENSORS; ++i)
+    {
+        whiteValues.averageValues[i] = (whiteValues.highValues[i] + whiteValues.lowValues[i])/2;
+        blackValues.averageValues[i] = (blackValues.highValues[i] + blackValues.lowValues[i])/2;
+    }
+}
+
+/*
 //calibration of the DAC value
 void Sensors::calibrate()
 {
@@ -153,7 +225,7 @@ void Sensors::calibrate()
 
     //analogWrite(DAC0, temp / NUM_SENSORS);
 }
-
+/**/
 Sensors::Sensors()
 {
     //initialize pins
@@ -161,9 +233,6 @@ Sensors::Sensors()
     {
         pinMode(digitalPins[i], INPUT);
         pinMode(analogPins[i], INPUT);
-
-        calibratedHighValues[i] = 0;
-        calibratedLowValues[i] = 0;
     }
 }
 

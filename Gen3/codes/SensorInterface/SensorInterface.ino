@@ -8,7 +8,7 @@ void setup()
     Serial.begin(9600);
     Serial.println("Begin calibration...");
     sensors.calibrate();
-    sensors.printDebugInfo();
+    sensors.printCalibratedInfo();
 }
 
 void loop()
