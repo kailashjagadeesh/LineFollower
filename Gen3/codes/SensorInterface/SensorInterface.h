@@ -49,8 +49,8 @@ public:
 };
 
 //pin definitions
-const uint8_t Sensors::analogPins[12] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
-const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 40, 28, 30, 26, 32, 38, 34, 36};
+const uint8_t Sensors::analogPins[12]  = {A0, A1, A2, A3, A11, A5, A6, A7, A8, A10,  A9, A4};
+const uint8_t Sensors::digitalPins[12] = { 6,  5,  4,  3,  36, 28, 30, 26, 32,  34,  36, 40};
 void Sensors::attachAllInterrupts()
 {
     attachInterrupt(digitalPinToInterrupt(CFPin), CFISR, CHANGE);
@@ -118,7 +118,7 @@ void Sensors::calibrate()
     //read analog values over 100 times
     for (int i = 0; i < 100; i++)
     {
-        readAnalog();
+        readSensorsAnalog();
 
         for (int j = 0; i < NUM_SENSORS; j++)
         {
@@ -167,7 +167,7 @@ Sensors::Sensors()
     }
 }
 
-void Sensors::readAnalog()
+void Sensors::readSensorsAnalog()
 {
     for (int i = 0; i < NUM_SENSORS; i++)
     {
