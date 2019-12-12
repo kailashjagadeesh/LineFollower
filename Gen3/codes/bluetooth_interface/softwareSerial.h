@@ -34,8 +34,8 @@ softSerial::softSerial(int rxPin, int txPin, int baudRate)
     serial_tc0.half_duplex_begin(
         txPin,
         baudRate,
-        soft_uart::data_bit_codes::NINE_BITS,
-        soft_uart::parity_codes::EVEN_PARITY,
+        soft_uart::data_bit_codes::EIGHT_BITS,
+        soft_uart::parity_codes::NO_PARITY,
         soft_uart::stop_bit_codes::ONE_STOP_BIT,
         false // on transmission mode (the default is on reception mode)
     );
@@ -43,7 +43,7 @@ softSerial::softSerial(int rxPin, int txPin, int baudRate)
         rxPin,
         baudRate,
         soft_uart::data_bit_codes::EIGHT_BITS,
-        soft_uart::parity_codes::EVEN_PARITY,
+        soft_uart::parity_codes::NO_PARITY,
         soft_uart::stop_bit_codes::ONE_STOP_BIT
         // initially on reception mode, last argument is true by default
     );
