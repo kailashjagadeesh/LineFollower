@@ -3,8 +3,8 @@
 
 using namespace arduino_due;
 
-#define SERIAL_TC0_PIN 18 // TC0 software serial port's half duplex pin
-#define SERIAL_TC1_PIN 19 // TC1 software serial port's half duplex pin
+#define SERIAL_TC0_PIN 19 // TC0 software serial port's half duplex pin
+#define SERIAL_TC1_PIN 18 // TC1 software serial port's half duplex pin
 #define SOFT_UART_BIT_RATE 9600 // 38400 57600 38400 1200 19200 9600 115200 115200 75
 #define RX_BUF_LENGTH 256 // software serial port's reception buffer length
 #define TX_BUF_LENGTH 256 // software serial port's transmision buffer length
