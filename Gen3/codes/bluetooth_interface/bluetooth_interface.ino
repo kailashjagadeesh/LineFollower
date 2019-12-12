@@ -9,5 +9,5 @@ void setup()
 }
 void loop()
 {
-  bluetooth.println("test");
+  bluetooth.println("T");
 }

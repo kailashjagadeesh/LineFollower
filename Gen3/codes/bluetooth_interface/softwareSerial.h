@@ -2,10 +2,11 @@
 #include <fifo.h>
 using namespace arduino_due;
 
-
-#define RX_BUF_LENGTH 256     // software serial port's reception buffer length
-#define TX_BUF_LENGTH 256     // software serial port's transmision buffer length
+#define RX_BUF_LENGTH 256 // software serial port's reception buffer length
+#define TX_BUF_LENGTH 256 // software serial port's transmision buffer length
+#define TX_INACTIVE_TIME 50 // milliseconds
 #define RECEPTION_TIMEOUT 100 // milliseconds
+
 
 // declaration of software serial port object serial_tc0
 // which uses timer/counter channel TC0
@@ -49,7 +50,7 @@ softSerial::softSerial(int rxPin, int txPin, int baudRate)
     );
 }
 // Pass a string to send via BT
-void softSerial ::println(char *string)
+void softSerial ::println(char string)
 {
-    serial_tc0.println(string);
+    serial_tc0.write(string);
 }
