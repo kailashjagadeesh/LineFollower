@@ -1,13 +1,13 @@
 
 
 #include"softwareSerial.h"
-softSerial bluetooth(19,18,9600);
+
 
 void setup()
 {
-  
+  bluetoothInit();
 }
 void loop()
 {
-  bluetooth.println("T");
+  bluetoothPrint(50);
 }
