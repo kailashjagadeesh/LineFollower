@@ -1,22 +1,44 @@
 #ifndef LEDINTERFACE_H
 #define LEDINTERFACE_H
 
+#include "TesterInterface.h"
+
+#ifndef NUM_LED
+    //number of LED pins (LEDInterface)
+    #define NUM_LED 2
+    //Array of leds (LEDInterface)
+    #define LED_PINS {14, 15}
+#endif
+
 class LED {
+    static bool initialized;
     public:
-    int pins[2] = {14, 15};
+    static const int * const pins;
+    static const int nPins;
 
-    enum led {
-        one, two
-    };
+    //initialize LED pins
+    static void init();
+    //write an LED pin
+    static void write(int i, int v);
+};
 
-    LED() {
-        pinMode(pins[0], OUTPUT);
-        pinMode(pins[1], OUTPUT);
+const int * const LED::pins = new int[NUM_LED] LED_PINS;
+const int LED::nPins = NUM_LED;
+bool LED::initialized = false;
+
+void LED::init() {
+    for (int i = 0; i < nPins; ++i)
+        pinMode(pins[i], OUTPUT);
+
+    initialized = true;
+}
+
+void LED::write(int i, int v) {
+    if (initialized)
+        digitalWrite(pins[i], v);
+    else {
+        SERIALD.println("\n***error: LEDInterface::write : LEDs not initialized yet!");
     }
-
-    void write(led l, int v) {
-        digitalWrite(pins[l], v);
-    }
-} led;
+}
 
 #endif
