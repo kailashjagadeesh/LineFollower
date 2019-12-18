@@ -25,18 +25,24 @@ class Sensors
     static const uint8_t digitalPins[12];
 
 public:
-    struct calibratedValues{
+    struct CalibratedValues{
         uint16_t highValues[NUM_SENSORS];
         uint16_t lowValues[NUM_SENSORS];
         uint16_t averageValues[NUM_SENSORS];
     } whiteValues, blackValues;
 
+    struct {
+        uint16_t thresholdValues[NUM_SENSORS]; 
+    } calibratedValues;
+
     uint16_t digitalReadings[12];
+    uint16_t digitalValues;
     void attachAllInterrupts();
     //read values
     void readSensorsAnalog();
-    void readSensorsDigital(uint8_t*, bool*);
+    void readSensorsDigital(volatile uint8_t*,volatile bool*);
     void readSensors();
+    void convertAnalogToDigital();
 
     //callibration (set DAC Values)
     void calibrate();
@@ -50,11 +56,18 @@ public:
     void printCalibratedInfo();
     void printAnalogReadings();
     void printDigitalReadings();
+    void printDigitalValues();
 };
 
 //pin definitions
-const uint8_t Sensors::analogPins[12]  = {A0, A1, A2, A3, A11, A5, A6, A7, A8, A10,  A9, A4};
-const uint8_t Sensors::digitalPins[12] = { 6,  5,  4,  3,  36, 28, 30, 26, 32,  34,  36, 40};
+const uint8_t Sensors::analogPins[12]  = {A0, A1, A2, A3, A11, A5, A9, A7, A8, A10,  A6, A4};
+const uint8_t Sensors::digitalPins[12] = { 6,  5,  4,  3,  36, 28, 38, 26, 32,  34,  30, 40};
+
+void Sensors::printDigitalValues() {
+    Serial.print("Converted values: ");
+    Serial.println(digitalValues, BIN);
+}
+
 void Sensors::attachAllInterrupts()
 {
     attachInterrupt(digitalPinToInterrupt(CFPin), CFISR, CHANGE);
@@ -112,6 +125,14 @@ void Sensors::printCalibratedInfo()
         Serial.print(blackValues.averageValues[i]);
         Serial.print("\t");
     }
+
+    Serial.println("\n\n\nTHRESHOLD VALUES:");
+    Serial.print("THRESHOLD VALUES:\t");
+    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    {
+        Serial.print(calibratedValues.thresholdValues[i]);
+        Serial.print("\t");
+    }
 }
 
 void Sensors::printAnalogReadings()
@@ -140,10 +161,12 @@ void Sensors::calibrate() {
     for (int i = 0; i < NUM_SENSORS; i++) {
         whiteValues.highValues[i] = whiteValues.lowValues[i] = 0;
         blackValues.highValues[i] = blackValues.lowValues[i] = 0;
+        calibratedValues.thresholdValues[i] = 0;
     }
 
     Serial.println("Keep on white surface");
     delay(5000);
+    Serial.println("reading values...");
     for (int i = 0; i < 100; i++) {
         readSensorsAnalog();
         for (int j = 0; j < NUM_SENSORS; ++j) {
@@ -157,6 +180,7 @@ void Sensors::calibrate() {
 
     Serial.println("Keep on black surface");
     delay(5000);
+    Serial.println("reading values...");
     for (int i = 0; i < 100; i++) {
         readSensorsAnalog();
         for (int j = 0; j < NUM_SENSORS; ++j) {
@@ -172,60 +196,19 @@ void Sensors::calibrate() {
     {
         whiteValues.averageValues[i] = (whiteValues.highValues[i] + whiteValues.lowValues[i])/2;
         blackValues.averageValues[i] = (blackValues.highValues[i] + blackValues.lowValues[i])/2;
+        calibratedValues.thresholdValues[i] = (whiteValues.lowValues[i] + blackValues.highValues[i])/2; 
     }
 }
 
-/*
-//calibration of the DAC value
-void Sensors::calibrate()
-{
-    //keeping track of number of values
-    uint8_t tempH[12], tempL[12];
-    for (int i = 0; i < 12; i++)
-    {
-        tempH[i] = 0;
-        tempL[i] = 0;
-    }
-
-    //read analog values over 100 times
-    for (int i = 0; i < 100; i++)
-    {
-        readSensorsAnalog();
-
-        for (int j = 0; i < NUM_SENSORS; j++)
-        {
-            if (analogReadings[j] >= CLASSIFICATION_THRESHOLD)
-            {
-                calibratedHighValues[j] += analogReadings[j];
-                tempH[j]++;
-            }
-            else
-            {
-                calibratedLowValues[j] += analogReadings[j];
-                tempL[j]++;
-            }
+void Sensors::convertAnalogToDigital() {
+    digitalValues = 0;
+    for (int i = 0; i < NUM_SENSORS; ++i) {
+        if (analogReadings[i] > calibratedValues.thresholdValues[i]) {
+            digitalValues |= (1 << (NUM_SENSORS - i - 1));
         }
-
-        //delay between readings
-        delay(10);
     }
-
-    for (int i = 0; i < NUM_SENSORS; i++)
-    {
-        calibratedHighValues[i] /= tempH[i];
-        calibratedLowValues[i] /= tempL[i];
-    }
-
-    //setting the DAC values of the average of the average of high and low means
-    uint16_t temp = 0;
-    for (int i = 0; i < NUM_SENSORS; i++)
-    {
-        temp += calibratedHighValues[i] + calibratedLowValues[i];
-    }
-
-    //analogWrite(DAC0, temp / NUM_SENSORS);
 }
-/**/
+
 Sensors::Sensors()
 {
     //initialize pins
@@ -244,7 +227,7 @@ void Sensors::readSensorsAnalog()
     }
 }
 // CF pin must be indexed 8th(count from 0)
-void Sensors::readSensorsDigital(uint8_t *backSensorState, bool *CFState)
+void Sensors::readSensorsDigital(volatile uint8_t *backSensorState,volatile bool *CFState)
 {
     *backSensorState = 0;
     *CFState = 0;
