@@ -99,5 +99,15 @@ void testConversionLoop() {
     sensors.printDigitalValues();
 }
 
+void testLineDetectionSetup() {
+    commonSetup();
+    sensors.calibrate();
+}
+
+void testLineDetectionLoop() {
+    Serial.print("Line position: ");
+    Serial.println(sensors.readLine());
+}
+
 ////////////////////////////////////RUN TEST/////////////////////////////////////
-TEST(testConversion)
+TEST(testLineDetection)

@@ -1,4 +1,5 @@
 #include "ISRs.h"
+#include "LEDInterface.h"
 #ifndef SENSOR_INTERFACE_H
 #define SENSOR_INTERFACE_H
 
@@ -25,14 +26,16 @@ class Sensors
     static const uint8_t digitalPins[12];
 
 public:
-    struct CalibratedValues{
+    struct CalibratedValues
+    {
         uint16_t highValues[NUM_SENSORS];
         uint16_t lowValues[NUM_SENSORS];
         uint16_t averageValues[NUM_SENSORS];
     } whiteValues, blackValues;
 
-    struct {
-        uint16_t thresholdValues[NUM_SENSORS]; 
+    struct
+    {
+        uint16_t thresholdValues[NUM_SENSORS];
     } calibratedValues;
 
     uint16_t digitalReadings[12];
@@ -40,7 +43,7 @@ public:
     void attachAllInterrupts();
     //read values
     void readSensorsAnalog();
-    void readSensorsDigital(volatile uint8_t*,volatile bool*);
+    void readSensorsDigital(volatile uint8_t *, volatile bool *);
     void readSensors();
     void convertAnalogToDigital();
 
@@ -60,10 +63,11 @@ public:
 };
 
 //pin definitions
-const uint8_t Sensors::analogPins[12]  = {A0, A1, A2, A3, A11, A5, A9, A7, A8, A10,  A6, A4};
-const uint8_t Sensors::digitalPins[12] = { 6,  5,  4,  3,  36, 28, 38, 26, 32,  34,  30, 40};
+const uint8_t Sensors::analogPins[12] = {A0, A1, A2, A3, A11, A5, A9, A7, A8, A10, A6, A4};
+const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 38, 26, 32, 34, 30, 40};
 
-void Sensors::printDigitalValues() {
+void Sensors::printDigitalValues()
+{
     Serial.print("Converted values: ");
     Serial.println(digitalValues, BIN);
 }
@@ -88,19 +92,19 @@ void Sensors::printCalibratedInfo()
     Serial.println("Calibrated values: \n");
     Serial.println("WHITE:");
     Serial.print("MAX VALUES:\t");
-    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    for (int i = 0; i < NUM_SENSORS; ++i)
     {
         Serial.print(whiteValues.highValues[i]);
         Serial.print("\t");
     }
     Serial.print("\nMIN VALUES:\t");
-    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    for (int i = 0; i < NUM_SENSORS; ++i)
     {
         Serial.print(whiteValues.lowValues[i]);
         Serial.print("\t");
     }
     Serial.print("\nAVG VALUES:\t");
-    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    for (int i = 0; i < NUM_SENSORS; ++i)
     {
         Serial.print(whiteValues.averageValues[i]);
         Serial.print("\t");
@@ -108,19 +112,19 @@ void Sensors::printCalibratedInfo()
 
     Serial.println("\n\n\nBLACK:");
     Serial.print("MAX VALUES:\t");
-    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    for (int i = 0; i < NUM_SENSORS; ++i)
     {
         Serial.print(blackValues.highValues[i]);
         Serial.print("\t");
     }
     Serial.print("\nMIN VALUES:\t");
-    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    for (int i = 0; i < NUM_SENSORS; ++i)
     {
         Serial.print(blackValues.lowValues[i]);
         Serial.print("\t");
     }
     Serial.print("\nAVG VALUES:\t");
-    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    for (int i = 0; i < NUM_SENSORS; ++i)
     {
         Serial.print(blackValues.averageValues[i]);
         Serial.print("\t");
@@ -128,7 +132,7 @@ void Sensors::printCalibratedInfo()
 
     Serial.println("\n\n\nTHRESHOLD VALUES:");
     Serial.print("THRESHOLD VALUES:\t");
-    for (int i = 0 ; i < NUM_SENSORS; ++i)
+    for (int i = 0; i < NUM_SENSORS; ++i)
     {
         Serial.print(calibratedValues.thresholdValues[i]);
         Serial.print("\t");
@@ -156,37 +160,49 @@ void Sensors::printDigitalReadings()
     }
 }
 
-void Sensors::calibrate() {
+void Sensors::calibrate()
+{
     //clear the readings
-    for (int i = 0; i < NUM_SENSORS; i++) {
+    for (int i = 0; i < NUM_SENSORS; i++)
+    {
         whiteValues.highValues[i] = whiteValues.lowValues[i] = 0;
         blackValues.highValues[i] = blackValues.lowValues[i] = 0;
         calibratedValues.thresholdValues[i] = 0;
     }
 
+    led.write(LED::one, HIGH);
+    led.write(LED::two, HIGH);
+
     Serial.println("Keep on white surface");
     delay(5000);
     Serial.println("reading values...");
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++)
+    {
         readSensorsAnalog();
-        for (int j = 0; j < NUM_SENSORS; ++j) {
+        for (int j = 0; j < NUM_SENSORS; ++j)
+        {
             if (analogReadings[j] > whiteValues.highValues[j])
                 whiteValues.highValues[j] = analogReadings[j];
-            
+
             if (i == 0 || analogReadings[j] < whiteValues.lowValues[j])
                 whiteValues.lowValues[j] = analogReadings[j];
         }
     }
 
+    led.write(LED::one, LOW);
+    led.write(LED::two, LOW);
+
     Serial.println("Keep on black surface");
     delay(5000);
     Serial.println("reading values...");
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++)
+    {
         readSensorsAnalog();
-        for (int j = 0; j < NUM_SENSORS; ++j) {
+        for (int j = 0; j < NUM_SENSORS; ++j)
+        {
             if (analogReadings[j] > blackValues.highValues[j])
                 blackValues.highValues[j] = analogReadings[j];
-            
+
             if (i == 0 || analogReadings[j] < blackValues.lowValues[j])
                 blackValues.lowValues[j] = analogReadings[j];
         }
@@ -194,21 +210,25 @@ void Sensors::calibrate() {
 
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        whiteValues.averageValues[i] = (whiteValues.highValues[i] + whiteValues.lowValues[i])/2;
-        blackValues.averageValues[i] = (blackValues.highValues[i] + blackValues.lowValues[i])/2;
-        calibratedValues.thresholdValues[i] = (whiteValues.lowValues[i] + blackValues.highValues[i])/2; 
+        whiteValues.averageValues[i] = (whiteValues.highValues[i] + whiteValues.lowValues[i]) / 2;
+        blackValues.averageValues[i] = (blackValues.highValues[i] + blackValues.lowValues[i]) / 2;
+        calibratedValues.thresholdValues[i] = (whiteValues.lowValues[i] + blackValues.highValues[i]) / 2;
     }
 }
 
-void Sensors::convertAnalogToDigital() {
+void Sensors::convertAnalogToDigital()
+{
     digitalValues = 0;
-    for (int i = 0; i < NUM_SENSORS; ++i) {
-#ifndef WHITELINE_LOGIC
-        if (analogReadings[i] > calibratedValues.thresholdValues[i]) {
+    for (int i = 0; i < NUM_SENSORS; ++i)
+    {
+#ifdef WHITELINE_LOGIC
+        if (analogReadings[i] > calibratedValues.thresholdValues[i])
+        {
             digitalValues |= (1 << (NUM_SENSORS - i - 1));
         }
 #else
-        if (analogReadings[i] < calibratedValues.thresholdValues[i]) {
+        if (analogReadings[i] < calibratedValues.thresholdValues[i])
+        {
             digitalValues |= (1 << (NUM_SENSORS - i - 1));
         }
 #endif
@@ -229,21 +249,21 @@ void Sensors::readSensorsAnalog()
 {
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-#ifndef WHITELINE_LOGIC
+#ifdef WHITELINE_LOGIC
         analogReadings[i] = analogRead(analogPins[i]);
-#else 
+#else
         analogReadings[i] = 1023 - analogRead(analogPins[i]);
 #endif
     }
 }
 // CF pin must be indexed 8th(count from 0)
-void Sensors::readSensorsDigital(volatile uint8_t *backSensorState,volatile bool *CFState)
+void Sensors::readSensorsDigital(volatile uint8_t *backSensorState, volatile bool *CFState)
 {
     *backSensorState = 0;
     *CFState = 0;
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-#ifndef WHITELINE_LOGIC
+#ifdef WHITELINE_LOGIC
         digitalReadings[i] = digitalRead(digitalPins[i]);
 #else
         digitalReadings[i] = !digitalRead(digitalPins[i]);
@@ -268,19 +288,22 @@ void Sensors::readSensors()
     }
 }
 
-
 //Reads the sensor analog values and returns the position of the line
 uint16_t Sensors::readLine()
 {
     uint16_t sum[2] = {0, 0};
     readSensorsAnalog();
-    for (int i = 0; i < NUM_SENSORS; ++i)
+    convertAnalogToDigital();
+    for (int i = 2; i < NUM_SENSORS - 4; ++i)
     {
-        sum[0] += analogReadings[i] * i * 1000;
-        sum[1] += analogReadings[i];
+        if (digitalValues & (NUM_SENSORS - i - 1))
+        {
+            sum[0] += (i - 2) * 1000;
+            sum[1] += 1;
+        }
     }
 
-    return sum[0] / sum[1];
+    return (sum[1] > 0) ? (sum[0] / sum[1]) : 2000;
 }
 
 #endif
