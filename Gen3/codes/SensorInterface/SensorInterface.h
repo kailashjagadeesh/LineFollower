@@ -203,9 +203,15 @@ void Sensors::calibrate() {
 void Sensors::convertAnalogToDigital() {
     digitalValues = 0;
     for (int i = 0; i < NUM_SENSORS; ++i) {
+#ifndef WHITELINE_LOGIC
         if (analogReadings[i] > calibratedValues.thresholdValues[i]) {
             digitalValues |= (1 << (NUM_SENSORS - i - 1));
         }
+#else
+        if (analogReadings[i] < calibratedValues.thresholdValues[i]) {
+            digitalValues |= (1 << (NUM_SENSORS - i - 1));
+        }
+#endif
     }
 }
 
@@ -223,7 +229,11 @@ void Sensors::readSensorsAnalog()
 {
     for (int i = 0; i < NUM_SENSORS; i++)
     {
+#ifndef WHITELINE_LOGIC
         analogReadings[i] = analogRead(analogPins[i]);
+#else 
+        analogReadings[i] = 1023 - analogRead(analogPins[i]);
+#endif
     }
 }
 // CF pin must be indexed 8th(count from 0)
@@ -233,7 +243,11 @@ void Sensors::readSensorsDigital(volatile uint8_t *backSensorState,volatile bool
     *CFState = 0;
     for (int i = 0; i < NUM_SENSORS; i++)
     {
+#ifndef WHITELINE_LOGIC
         digitalReadings[i] = digitalRead(digitalPins[i]);
+#else
+        digitalReadings[i] = !digitalRead(digitalPins[i]);
+#endif
         if (i < 8)
         {
             (*backSensorState) |= digitalReadings[i] << (7 - i);
@@ -254,6 +268,8 @@ void Sensors::readSensors()
     }
 }
 
+
+//Reads the sensor analog values and returns the position of the line
 uint16_t Sensors::readLine()
 {
     uint16_t sum[2] = {0, 0};

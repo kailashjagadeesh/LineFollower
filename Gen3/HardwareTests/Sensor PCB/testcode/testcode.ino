@@ -1,3 +1,6 @@
+//CONFIGURATION
+#define BLACKLINE_LOGIC
+
 #include "SensorInterface.h"
 #include "TesterInterface.h"
 #include "MotorDriverInterface.h"
