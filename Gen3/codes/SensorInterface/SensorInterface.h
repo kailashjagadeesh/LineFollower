@@ -4,6 +4,7 @@
 #define SENSOR_INTERFACE_H
 
 #define NUM_SENSORS 9
+#define NUM_PIDSENSORS 5
 #define CLASSIFICATION_THRESHOLD 511
 #define CFPin 6
 
@@ -294,7 +295,7 @@ uint16_t Sensors::readLine()
     uint16_t sum[2] = {0, 0};
     readSensorsAnalog();
     convertAnalogToDigital();
-    for (int i = 2; i < NUM_SENSORS - 4; ++i)
+    for (int i = (NUM_SENSORS - NUM_PIDSENSORS)/2; i < NUM_PIDSENSORS; ++i)
     {
         if (digitalValues & (NUM_SENSORS - i - 1))
         {
@@ -303,7 +304,7 @@ uint16_t Sensors::readLine()
         }
     }
 
-    return (sum[1] > 0) ? (sum[0] / sum[1]) : 2000;
+    return (sum[1] > 0) ? (sum[0] / sum[1]) : ((NUM_PIDSENSORS - 1) * 1000 / 2);
 }
 
 #endif
