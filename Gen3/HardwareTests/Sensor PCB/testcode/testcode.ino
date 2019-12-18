@@ -4,13 +4,32 @@
 
 Sensors sensors;
 Motor motors;
-#define CALIB_VALUE 0
+#define CALIB_VALUE 200
 #define RESOLUTION 8
 #define mapAnalogToDac(x) (x) * 255 / 1023
 
 //////////////////////////DEFINE THE TESTS////////////////////////
 void commonSetup() {
     Serial.begin(9600);
+}
+
+void setupDAC() {
+    commonSetup();
+    pinMode(DAC0, OUTPUT);
+    Serial.print("Compare value set to: ");
+    Serial.println(mapAnalogToDac(CALIB_VALUE));
+    analogWriteResolution(RESOLUTION);
+    analogWrite(DAC0, mapAnalogToDac(CALIB_VALUE));
+}
+
+void testBothSetup() {
+    setupDAC();
+}
+
+void testBothLoop() {
+    sensors.readSensors();
+    sensors.printAnalogReadings();
+    sensors.printDigitalReadings();
 }
 
 void testAnalogSetup() {
@@ -61,5 +80,21 @@ void testCalibLoop() {
     // sensors.printAnalogReadings();
 }
 
+void testConversionSetup() {
+    commonSetup();
+    sensors.calibrate();
+    sensors.printCalibratedInfo();
+    
+    Serial.println("\nBeginning sensors readings in 3 seconds...");
+    delay(3000);
+}
+
+void testConversionLoop() {
+    sensors.readSensors();
+    sensors.convertAnalogToDigital();
+    sensors.printAnalogReadings();
+    sensors.printDigitalValues();
+}
+
 ////////////////////////////////////RUN TEST/////////////////////////////////////
-TEST(testDigital)
+TEST(testConversion)

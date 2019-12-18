@@ -23,3 +23,4 @@ Results with Due:
 
 pin 34 - not connected properly to the respective opamp o/p
 pin 40 - not connected properly
+pin 30 

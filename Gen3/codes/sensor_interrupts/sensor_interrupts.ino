@@ -26,4 +26,7 @@ void setup()
 }
 void loop()
 {
+  Serial.print(backSensorState, BIN);
+  Serial.print("\t");
+  Serial.println(CFState);
 }
