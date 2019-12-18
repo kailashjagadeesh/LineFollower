@@ -39,16 +39,25 @@ public:
         uint16_t thresholdValues[NUM_SENSORS];
     } calibratedValues;
 
+    //digital pin outputs
     uint16_t digitalReadings[12];
+
+    //analog outputs converted to digital using calibrated threshold values
     uint16_t digitalValues;
+
     void attachAllInterrupts();
+
     //read values
+    //read analog values and fill analogReadings[]
     void readSensorsAnalog();
+    //read digital pins and fill digitalReadings[] 
     void readSensorsDigital(volatile uint8_t *, volatile bool *);
+    //read both analog and digital pins
     void readSensors();
+    //convert analogReadings[] to digital form and fill digitalValues
     void convertAnalogToDigital();
 
-    //callibration (set DAC Values)
+    //callibration of min, max and avg values of each sensor and hence threshold values
     void calibrate();
 
     //get line for PID
@@ -57,9 +66,13 @@ public:
     Sensors();
 
     //debug info
+    //print calibrated data
     void printCalibratedInfo();
+    //print analogReadings
     void printAnalogReadings();
+    //print digitalReadings
     void printDigitalReadings();
+    //print digitalValues
     void printDigitalValues();
 };
 
@@ -87,7 +100,7 @@ void Sensors::attachAllInterrupts()
     attachInterrupt(digitalPinToInterrupt(RB1Pin), RB1ISR, CHANGE);
     attachInterrupt(digitalPinToInterrupt(RB2Pin), RB2ISR, CHANGE);
 }
-//debug
+
 void Sensors::printCalibratedInfo()
 {
     Serial.println("Calibrated values: \n");
