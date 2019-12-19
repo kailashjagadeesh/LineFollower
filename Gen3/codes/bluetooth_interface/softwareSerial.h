@@ -35,8 +35,8 @@ class Bluetooth
 {
 public:
   void begin();
-  void print(uint32_t);
-  void println(uint32_t);
+  void print(uint32_t, int radix = 10);
+  void println(uint32_t, int radix = 10);
   void print(float);
   void println(float);
   void print(const char *);
@@ -81,21 +81,29 @@ void Bluetooth ::println(float number)
   serial_tc0.write(temp);
 }
 
-void Bluetooth ::print(uint32_t number)
+void Bluetooth ::print(uint32_t number, int radix)
 {
 
-  char temp[10];
+  char temp[15];
+  switch(radix) {
+    case 10: sprintf(temp, "%d", number); break;
+    case 16: sprintf(temp, "%x", number); break;
+    case 2: 
+    char *p;
+    int i;
+    p = temp;
 
-  sprintf(temp, "%d", number);
+    for (i = 8; i >= 0; i--)
+        *(p++) = (number & (1 << i))? '1' : '0';
+    *p = 0;
+    break;
+  }
+  
   serial_tc0.write(temp);
 }
-void Bluetooth ::println(uint32_t number)
+void Bluetooth ::println(uint32_t number, int radix)
 {
-
-  char temp[10];
-
-  sprintf(temp, "%d", number);
-  serial_tc0.write(temp);
+  print(number, radix);
   serial_tc0.write("\n");
 }
 //receive_tc_definition;
