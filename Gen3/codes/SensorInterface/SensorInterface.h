@@ -5,8 +5,14 @@
 #include "ISRs.h"
 #include "LEDInterface.h"
 
+#ifndef NUM_SENSORS
 #define NUM_SENSORS 9
+#endif
+
+#ifndef NUM_PIDSENSORS
 #define NUM_PIDSENSORS 5
+#endif
+
 #define CLASSIFICATION_THRESHOLD 511
 #define CFPin 6
 
@@ -79,7 +85,7 @@ public:
 };
 
 //pin definitions
-const uint8_t Sensors::analogPins[12] = {A0, A1, A2, A3, A11, A5, A9, A7, A8, A10, A6, A4};
+const uint8_t Sensors::analogPins[12] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
 const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 38, 26, 32, 34, 30, 40};
 
 void Sensors::printDigitalValues()

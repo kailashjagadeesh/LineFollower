@@ -2,8 +2,13 @@
 #define TESTER_INTERFACE_H
 
 #ifndef SERIALD 
-//Serial to print debug/error info (TesterInterface)
+//Serial to print debug info (TesterInterface)
 #define SERIALD Serial
+#endif
+
+#ifndef SERIALERR
+//Serial to print error info (TesterInterface)
+#define SERIALERR Serial
 #endif
 
 #define TEST(s) \
