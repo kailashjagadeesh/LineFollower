@@ -9,5 +9,5 @@ void setup()
 }
 void loop()
 {
-  bluetoothPrint(50);
+  bluetoothPrint("Hello World\n");
 }
