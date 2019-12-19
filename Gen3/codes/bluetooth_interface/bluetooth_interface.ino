@@ -2,12 +2,13 @@
 
 #include"softwareSerial.h"
 
-
+Bluetooth bluetooth;
 void setup()
 {
-  bluetoothInit();
+  bluetooth.begin(); 
 }
 void loop()
 {
-  bluetoothPrint("Hello World\n");
+  bluetooth.println(70);
+ 
 }

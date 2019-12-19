@@ -31,8 +31,16 @@ serial_tc1_declaration(RX_BUF_LENGTH, TX_BUF_LENGTH);
 
 // FIX: here we instantiate the template definition
 // of receive_tc
-
-void bluetoothInit()
+class Bluetooth
+{
+public:
+  void begin();
+  void print(uint32_t);
+  void println(uint32_t);
+  void print(const char *);
+  void println(const char *);
+};
+void Bluetooth::begin()
 {
 
   serial_tc0.half_duplex_begin(
@@ -52,9 +60,30 @@ void bluetoothInit()
       // initially on reception mode, last argument is true by default
   );
 }
-//receive_tc_definition;
-void bluetoothPrint(const char * array)
+void Bluetooth ::print(uint32_t number)
 {
 
+  char temp[10];
+
+  sprintf(temp, "%d", number);
+  serial_tc0.write(temp);
+}
+void Bluetooth ::println(uint32_t number)
+{
+
+  char temp[10];
+
+  sprintf(temp, "%d", number);
+  serial_tc0.write(temp);
+  serial_tc0.write("\n");
+}
+//receive_tc_definition;
+void Bluetooth ::print(const char *array)
+{
   serial_tc0.write(array);
+}
+void Bluetooth ::println(const char *array)
+{
+  serial_tc0.write(array);
+  serial_tc0.write("\n");
 }
