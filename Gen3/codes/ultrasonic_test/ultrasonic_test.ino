@@ -1,14 +1,19 @@
+#define SERIALD bluetooth
+
 #include"ultrasonic.h"
+#include "softwareSerial.h"
+#include "TesterInterface.h"
 
 Ultrasonic ultrasonic;
+Bluetooth bluetooth;
 
 void setup()
 {
-  ultrasonic.begin();
-   Serial.begin(9600); 
+   bluetooth.begin();
 }
+
 void loop()
 {
-    Serial.println (ultrasonic.measureDistance());
+    SERIALD.println ((ultrasonic.measureDistance()));
     delay(500);
 }

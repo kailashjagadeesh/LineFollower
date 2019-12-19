@@ -1,4 +1,7 @@
 #include <string.h>
+#include "ultrasonic.h"
+#include "MotorDriverInterface.h"
+
 #define button 2
 #define redLED 14
 #define yellowLED 15
@@ -50,6 +53,8 @@ char data[9];
 uint8_t choiceJunction = 0;
 char junctionsTraversed[25] = ""; // Holds all the choices taken so far
 Ultrasonic ultrasonic;
+Motor motor;
+
 void junctionControl(Junction J, mode m) // Take appropriate action based on the junction detected
 {
   uint8_t backSensors;

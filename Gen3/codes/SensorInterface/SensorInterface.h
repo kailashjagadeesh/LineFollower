@@ -2,7 +2,6 @@
 #define SENSOR_INTERFACE_H
 
 #include "TesterInterface.h"
-#include "ISRs.h"
 #include "LEDInterface.h"
 
 #ifndef NUM_SENSORS
@@ -53,8 +52,6 @@ public:
     //analog outputs converted to digital using calibrated threshold values
     uint16_t digitalValues;
 
-    void attachAllInterrupts();
-
     //read values
     //read analog values and fill analogReadings[]
     void readSensorsAnalog();
@@ -90,95 +87,95 @@ const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 38, 26, 32, 34, 30
 
 void Sensors::printDigitalValues()
 {
-    SERIALD.print("Converted values: ");
-    SERIALD.println(digitalValues, BIN);
+    //SERIALD.print("Converted values: ");
+    //SERIALD.println(digitalValues, BIN);
 }
 
-void Sensors::attachAllInterrupts()
-{
-    attachInterrupt(digitalPinToInterrupt(CFPin), CFISR, CHANGE);
+// void Sensors::attachAllInterrupts()
+// {
+//     attachInterrupt(digitalPinToInterrupt(CFPin), CFISR, CHANGE);
 
-    attachInterrupt(digitalPinToInterrupt(LFPin), LFISR, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(LMPin), LMISR, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(LB1Pin), LB1ISR, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(LB2Pin), LB2ISR, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(LFPin), LFISR, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(LMPin), LMISR, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(LB1Pin), LB1ISR, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(LB2Pin), LB2ISR, CHANGE);
 
-    attachInterrupt(digitalPinToInterrupt(RFPin), RFISR, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(RMPin), RMISR, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(RB1Pin), RB1ISR, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(RB2Pin), RB2ISR, CHANGE);
-}
+//     attachInterrupt(digitalPinToInterrupt(RFPin), RFISR, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(RMPin), RMISR, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(RB1Pin), RB1ISR, CHANGE);
+//     attachInterrupt(digitalPinToInterrupt(RB2Pin), RB2ISR, CHANGE);
+// }
 
 void Sensors::printCalibratedInfo()
 {
-    SERIALD.println("Calibrated values: \n");
-    SERIALD.println("WHITE:");
-    SERIALD.print("MAX VALUES:\t");
+    //SERIALD.println("Calibrated values: \n");
+    //SERIALD.println("WHITE:");
+    //SERIALD.print("MAX VALUES:\t");
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        SERIALD.print(whiteValues.highValues[i]);
-        SERIALD.print("\t");
+        //SERIALD.print(whiteValues.highValues[i]);
+        //SERIALD.print("\t");
     }
-    SERIALD.print("\nMIN VALUES:\t");
+    //SERIALD.print("\nMIN VALUES:\t");
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        SERIALD.print(whiteValues.lowValues[i]);
-        SERIALD.print("\t");
+        //SERIALD.print(whiteValues.lowValues[i]);
+        //SERIALD.print("\t");
     }
-    SERIALD.print("\nAVG VALUES:\t");
+    //SERIALD.print("\nAVG VALUES:\t");
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        SERIALD.print(whiteValues.averageValues[i]);
-        SERIALD.print("\t");
-    }
-
-    SERIALD.println("\n\n\nBLACK:");
-    SERIALD.print("MAX VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
-    {
-        SERIALD.print(blackValues.highValues[i]);
-        SERIALD.print("\t");
-    }
-    SERIALD.print("\nMIN VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
-    {
-        SERIALD.print(blackValues.lowValues[i]);
-        SERIALD.print("\t");
-    }
-    SERIALD.print("\nAVG VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
-    {
-        SERIALD.print(blackValues.averageValues[i]);
-        SERIALD.print("\t");
+        //SERIALD.print(whiteValues.averageValues[i]);
+        //SERIALD.print("\t");
     }
 
-    SERIALD.println("\n\n\nTHRESHOLD VALUES:");
-    SERIALD.print("THRESHOLD VALUES:\t");
+    //SERIALD.println("\n\n\nBLACK:");
+    //SERIALD.print("MAX VALUES:\t");
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        SERIALD.print(calibratedValues.thresholdValues[i]);
-        SERIALD.print("\t");
+        //SERIALD.print(blackValues.highValues[i]);
+        //SERIALD.print("\t");
+    }
+    //SERIALD.print("\nMIN VALUES:\t");
+    for (int i = 0; i < NUM_SENSORS; ++i)
+    {
+        //SERIALD.print(blackValues.lowValues[i]);
+        //SERIALD.print("\t");
+    }
+    //SERIALD.print("\nAVG VALUES:\t");
+    for (int i = 0; i < NUM_SENSORS; ++i)
+    {
+        //SERIALD.print(blackValues.averageValues[i]);
+        //SERIALD.print("\t");
+    }
+
+    //SERIALD.println("\n\n\nTHRESHOLD VALUES:");
+    //SERIALD.print("THRESHOLD VALUES:\t");
+    for (int i = 0; i < NUM_SENSORS; ++i)
+    {
+        //SERIALD.print(calibratedValues.thresholdValues[i]);
+        //SERIALD.print("\t");
     }
 }
 
 void Sensors::printAnalogReadings()
 {
-    SERIALD.print("\n\nAnalog: ");
+    //SERIALD.print("\n\nAnalog: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-        SERIALD.print(analogReadings[i]);
-        SERIALD.print("\t");
+        //SERIALD.print(analogReadings[i]);
+        //SERIALD.print("\t");
     }
 }
 
 void Sensors::printDigitalReadings()
 {
 
-    SERIALD.print("\n\nDigital: ");
+    //SERIALD.print("\n\nDigital: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-        SERIALD.print(digitalReadings[i]);
-        SERIALD.print("\t");
+        //SERIALD.print(digitalReadings[i]);
+        //SERIALD.print("\t");
     }
 }
 
@@ -195,9 +192,9 @@ void Sensors::calibrate()
     LED::write(0, HIGH);
     LED::write(1, HIGH);
 
-    SERIALD.println("Keep on white surface");
+    //SERIALD.println("Keep on white surface");
     delay(5000);
-    SERIALD.println("reading values...");
+    //SERIALD.println("reading values...");
     for (int i = 0; i < 100; i++)
     {
         readSensorsAnalog();
@@ -214,9 +211,9 @@ void Sensors::calibrate()
     LED::write(0, LOW);
     LED::write(1, LOW);
 
-    SERIALD.println("Keep on black surface");
+    //SERIALD.println("Keep on black surface");
     delay(5000);
-    SERIALD.println("reading values...");
+    //SERIALD.println("reading values...");
     for (int i = 0; i < 100; i++)
     {
         readSensorsAnalog();
