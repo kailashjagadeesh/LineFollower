@@ -2,6 +2,7 @@
 #define BLACKLINE_LOGIC
 
 #include "SensorInterface.h"
+#include "LEDInterface.h"
 #include "TesterInterface.h"
 #include "MotorDriverInterface.h"
 
@@ -14,6 +15,7 @@ Motor motors;
 //////////////////////////DEFINE THE TESTS////////////////////////
 void commonSetup() {
     Serial.begin(9600);
+    LED::init();
 }
 
 void setupDAC() {
@@ -106,6 +108,9 @@ void testLineDetectionSetup() {
 
 void testLineDetectionLoop() {
     Serial.print("Line position: ");
+    sensors.readSensors();
+    sensors.convertAnalogToDigital();
+    sensors.printDigitalValues();
     Serial.println(sensors.readLine());
 }
 

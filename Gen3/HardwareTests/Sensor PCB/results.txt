@@ -15,3 +15,6 @@ BLACK:
 MAX VALUES:	67	73	104	314	8	419	259	114	70	
 MIN VALUES:	65	71	102	309	6	412	254	111	69	
 AVG VALUES:	66	72	103	311	7	415	256	112	69
+
+Conclusions: Common DAC needs work, sensors have too much variations
+Until DAC is fixed, using convertAnalogToDigital() as digitalreading
