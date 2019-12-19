@@ -37,6 +37,8 @@ public:
   void begin();
   void print(uint32_t);
   void println(uint32_t);
+  void print(float);
+  void println(float);
   void print(const char *);
   void println(const char *);
 };
@@ -60,6 +62,25 @@ void Bluetooth::begin()
       // initially on reception mode, last argument is true by default
   );
 }
+
+void Bluetooth ::print(float number)
+{
+
+  char temp[15];
+
+  sprintf(temp, "%f", number);
+  serial_tc0.write(temp);
+}
+
+void Bluetooth ::println(float number)
+{
+
+  char temp[15];
+
+  sprintf(temp, "%f\n", number);
+  serial_tc0.write(temp);
+}
+
 void Bluetooth ::print(uint32_t number)
 {
 
