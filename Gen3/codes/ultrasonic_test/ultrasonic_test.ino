@@ -4,6 +4,7 @@ Ultrasonic ultrasonic;
 
 void setup()
 {
+  ultrasonic.begin();
    Serial.begin(9600); 
 }
 void loop()

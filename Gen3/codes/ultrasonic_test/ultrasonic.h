@@ -5,12 +5,12 @@ class Ultrasonic
     int trigPin, echoPin;
 
 public:
-    Ultrasonic(int, int);
+    void begin(int, int);
     float measureDistance();
     bool detectBlock(int thresholdDistance);
 };
 // Initializes GPIOs for using ultrasonic
-Ultrasonic ::Ultrasonic(int trig = 24, int echo = 22)
+void Ultrasonic ::begin(int trig = 24, int echo = 22)
 {
     trigPin = trig;
     echoPin = echo;
