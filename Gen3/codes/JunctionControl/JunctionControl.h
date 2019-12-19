@@ -94,7 +94,16 @@ void JunctionControl::updateState()
 
     backSensorState = sensorValues & (0b1111);
     backSensorState |= (sensorValues & (0b111100000)) >> 1;
+
+    SERIALD.print("back sensors: ");
+    SERIALD.println((uint32_t)(backSensorState), BIN);
+
     CFState = sensorValues & 0b000010000;
+    SERIALD.print("CF state: ");
+    if (CFState)
+        SERIALD.println("1");
+    else
+        SERIALD.println("0");
 
     blockDetectFlag = false; //ultrasonic.detectBlock(); TODO
 }

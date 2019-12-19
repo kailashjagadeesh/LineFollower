@@ -4,7 +4,7 @@
 #define PID_CONVFACTOR 100
 #define NUM_PIDSENSORS 9
 #define PID_IDEAL 4000
-#define PUSH_BUTTON 2
+#define PUSH_BUTTON 50
 
 //dependencies
 #include "softwareSerial.h"
@@ -27,6 +27,7 @@ JunctionControl junctionControl(sensors, ultrasonic, motors);
 
 void setup() {
     bluetooth.begin();
+    LED::init();
     pinMode(PUSH_BUTTON, INPUT_PULLUP);
     SERIALD.println("Meshmerize Finale!");
 
@@ -37,6 +38,7 @@ void setup() {
     while (digitalRead(PUSH_BUTTON));
 
     SERIALD.println("Started");
+    motors.stopMotors();
 }
 
 void loop() {
