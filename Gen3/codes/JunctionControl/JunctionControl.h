@@ -75,11 +75,10 @@ public:
     void updateState();
     void detect();
     void control(Junction);
-    JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor& _motors);
+    JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor &_motors);
 };
 
-JunctionControl::JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor& _motors) : 
-sensors(_sensors), ultrasonic(_ultrasonic), motors(_motors)
+JunctionControl::JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor &_motors) : sensors(_sensors), ultrasonic(_ultrasonic), motors(_motors)
 {
     backSensorState = 0;
     CFState = false;
@@ -136,22 +135,22 @@ void JunctionControl::detect()
         control(T);
     }
     // Straight Right detection
-    else if ((CFState == 1) && (((backSensorState <= 0b00001111) && (backSensorState >= 0b00001100)) || ((backSensorState <= 0b00011111) && (backSensorState >= 0b00011100))))
+    else if ((CFState == 1) && ((backSensorState == 0b00001111) || (backSensorState == 0b00011111)))
     {
         control(RS);
     }
     // Straight Left detection
-    else if ((CFState == 1) && (((backSensorStateInverted <= 0b00001111) && (backSensorStateInverted >= 0b00001100)) || ((backSensorStateInverted <= 0b00011111) && (backSensorStateInverted >= 0b00011100))))
+    else if ((CFState == 1) && ((backSensorStateInverted == 0b00001111) || (backSensorStateInverted == 0b00011111)))
     {
         control(LS);
     }
     //90 degree right
-    else if ((CFState == 0) && (((backSensorState <= 0b00001111) && (backSensorState >= 0b00001100)) || ((backSensorState <= 0b00011111) && (backSensorState >= 0b00011100))))
+    else if ((CFState == 0) && ((backSensorState == 0b00001111) || (backSensorState == 0b00011111)))
     {
         control(R);
     }
-    //90 degrees left
-    else if ((CFState == 0) && (((backSensorStateInverted <= 0b00001111) && (backSensorStateInverted >= 0b00001100)) || ((backSensorStateInverted <= 0b00011111) && (backSensorStateInverted >= 0b00011100))))
+    // Straight Left detection
+    else if ((CFState == 0) && ((backSensorStateInverted == 0b00001111) || (backSensorStateInverted == 0b00011111)))
     {
         control(L);
     }
