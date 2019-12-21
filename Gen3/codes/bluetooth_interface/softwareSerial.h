@@ -37,6 +37,10 @@ public:
   void begin();
   void print(uint32_t, int radix = 10);
   void println(uint32_t, int radix = 10);
+  void print(uint16_t, int radix = 10);
+  void println(uint16_t, int radix = 10);
+  void print(int, int radix = 10);
+  void println(int, int radix = 10);
   void print(float);
   void println(float);
   void print(const char *);
@@ -70,6 +74,22 @@ void Bluetooth ::print(float number)
 
   sprintf(temp, "%f", number);
   serial_tc0.write(temp);
+}
+
+void Bluetooth::print(uint16_t v, int radix) {
+  print ((uint32_t)(v), radix);
+}
+
+void Bluetooth::println(uint16_t v, int radix) {
+  println ((uint32_t)(v), radix);
+}
+
+void Bluetooth::print(int v, int radix) {
+  print ((uint32_t)(v), radix);
+}
+
+void Bluetooth::println(int v, int radix) {
+  println ((uint32_t)(v), radix);
 }
 
 void Bluetooth ::println(float number)
