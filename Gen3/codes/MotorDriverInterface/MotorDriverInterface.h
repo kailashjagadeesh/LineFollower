@@ -17,6 +17,8 @@ class Motor {
     const pin BIN2 = 8;
     const pin PWMB = 7;
 
+    bool enabled;
+
 #ifdef LEFTMOTOR_A
     const pin &leftFront = AIN1;
     const pin &rightFront = BIN1;
@@ -46,7 +48,18 @@ public:
     void setRightSpeed(uint8_t);
     void setLeftDirection(Direction);
     void setRightDirection(Direction);
+    void enable();
+    void disable();
 };
+
+void Motor::disable() {
+    enabled = false;
+    stopMotors();
+}
+
+void Motor::enable() {
+    enabled = true;
+}
 
 Motor::Motor() {
     pinMode(leftFront, OUTPUT);
@@ -60,6 +73,7 @@ Motor::Motor() {
     pinMode(STBY, OUTPUT);
 
     digitalWrite(STBY, HIGH);
+    enabled = true;
 }
 
 //stops the motors
@@ -75,13 +89,15 @@ void Motor::stopMotors() {
 //setLeftSpeed(speed: the speed to be set : 0 <= speed <= 255)
 void Motor::setLeftSpeed(uint8_t speed)
 {
-    analogWrite(leftSpeed, speed);
+    if (enabled)
+        analogWrite(leftSpeed, speed);
 }
 
 //setRightSpeed(speed: the speed to be set : 0 <= speed <= 255)
 void Motor::setRightSpeed(uint8_t speed)
 {
-    analogWrite(rightSpeed, speed);
+    if (enabled)
+        analogWrite(rightSpeed, speed);
 }
 
 void Motor::setLeftDirection(Direction dir)
