@@ -32,12 +32,12 @@ PIDControl::PIDControl(uint16_t _targetValue)
     kd = parameters + 1;
     ki = parameters + 2;
 
-    parameters[0] = 5; // Hard coded PID values
+    parameters[0] = 5.1; // Hard coded PID values
     parameters[1] = 4.35;
     parameters[2] = 0.00;
 
     //for sharp turns
-    parameters[3] = 7;
+    parameters[3] = 8;
     parameters[4] = 4.35;
     parameters[5] = 0;
 
@@ -72,8 +72,6 @@ int16_t PIDControl::control(int16_t currentValue)
     //errorSum += error;
     errorSum = error + lastError;
 
-    Serial.print("error: ");
-    Serial.println(error);
     if (abs(error) > 1000/PID_CONVFACTOR) {
         c = (*(kp+3)) * error + (*(kd+3)) * (error - lastError) + (*(ki+3)) * errorSum;
     }
@@ -81,15 +79,6 @@ int16_t PIDControl::control(int16_t currentValue)
         c = (*kp) * error + (*kd) * (error - lastError) + (*ki) * errorSum;    
     }
 
-#ifndef SERIALERR
-//Serial to print error info (TesterInterface)
-#define SERIALERR Serial
-#endif
-
-#ifndef SERIALERR
-//Serial to print error info (TesterInterface)
-#define SERIALERR Serial
-#endif
     lastError = error;
     return c;
 }
