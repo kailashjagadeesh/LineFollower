@@ -4,7 +4,6 @@
 #define PID_CONVFACTOR 100
 #define NUM_PIDSENSORS 9
 #define PID_IDEAL 4000
-#define PUSH_BUTTON 50
 
 //dependencies
 #include "softwareSerial.h"
@@ -25,29 +24,38 @@ Ultrasonic ultrasonic;
 MotorPIDControl pid(PID_IDEAL, 255, motors);
 JunctionControl junctionControl(sensors, ultrasonic, motors);
 
-void setup() {
+void setup()
+{
     bluetooth.begin();
     LED::init();
-    pinMode(PUSH_BUTTON, INPUT_PULLUP);
     SERIALD.println("Meshmerize Finale!");
 
-    SERIALD.println ("Calibration");
+    SERIALD.println("Calibration");
     sensors.calibrate();
 
     SERIALD.println("Press the button to begin!");
-    while (digitalRead(PUSH_BUTTON));
+    PushButtonInterface::waitForButton(0);
+    delay(2000);
 
     SERIALD.println("Started");
     motors.stopMotors();
 }
 
-void loop() {
+void loop()
+{
+    if (PushButtonInterface::readState(0))
+    {
+        motors.stopMotors();
+        SERIALD.println("Press button 2 to continue...");
+        PushButtonInterface::waitForButton(1);
+    }
+
     int16_t correction = pid.control(sensors.readLine());
+
+    junctionControl.detect();
 
     motors.setLeftDirection(Motor::FRONT);
     motors.setRightDirection(Motor::FRONT);
 
-    junctionControl.detect();
-
-    pid.setSpeedBasedOnCorrection(correction);
+    //pid.setSpeedBasedOnCorrection(correction);
 }

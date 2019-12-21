@@ -1,5 +1,9 @@
 //CONFIGURATION
 #define BLACKLINE_LOGIC
+#define SERIALD bluetooth
+
+#include "softwareSerial.h"
+Bluetooth bluetooth;
 
 #include "SensorInterface.h"
 #include "LEDInterface.h"
@@ -14,15 +18,15 @@ Motor motors;
 
 //////////////////////////DEFINE THE TESTS////////////////////////
 void commonSetup() {
-    Serial.begin(9600);
+    bluetooth.begin();
     LED::init();
 }
 
 void setupDAC() {
     commonSetup();
     pinMode(DAC0, OUTPUT);
-    Serial.print("Compare value set to: ");
-    Serial.println(mapAnalogToDac(CALIB_VALUE));
+    SERIALD.print("Compare value set to: ");
+    SERIALD.println(mapAnalogToDac(CALIB_VALUE));
     analogWriteResolution(RESOLUTION);
     analogWrite(DAC0, mapAnalogToDac(CALIB_VALUE));
 }
@@ -41,11 +45,11 @@ void testAnalogSetup() {
     commonSetup();
 
     pinMode(DAC0, OUTPUT);
-    Serial.print("Compare value set to: ");
-    Serial.println(mapAnalogToDac(CALIB_VALUE));
+    SERIALD.print("Compare value set to: ");
+    SERIALD.println(mapAnalogToDac(CALIB_VALUE));
     analogWriteResolution(RESOLUTION);
     analogWrite(DAC0, mapAnalogToDac(CALIB_VALUE));
-    Serial.println("Printing sensor analog values:");
+    SERIALD.println("Printing sensor analog values:");
 }
 
 void testAnalogLoop() {
@@ -58,11 +62,11 @@ void testDigitalSetup() {
     motors.stopMotors();
 
     pinMode(DAC0, OUTPUT);
-    Serial.print("Compare value set to: ");
-    Serial.println(mapAnalogToDac(CALIB_VALUE));
+    SERIALD.print("Compare value set to: ");
+    SERIALD.println(mapAnalogToDac(CALIB_VALUE));
     analogWriteResolution(RESOLUTION);
     analogWrite(DAC0, mapAnalogToDac(CALIB_VALUE));
-    Serial.println("Printing digital o/p:");
+    SERIALD.println("Printing digital o/p:");
 }
 
 void testDigitalLoop() {
@@ -76,7 +80,7 @@ void testCalibSetup() {
     sensors.calibrate();
     sensors.printCalibratedInfo();
 
-    // Serial.println("Will print analog values in 10...");
+    // SERIALD.println("Will print analog values in 10...");
     // delay(10000);
 }
 
@@ -90,14 +94,13 @@ void testConversionSetup() {
     sensors.calibrate();
     sensors.printCalibratedInfo();
     
-    Serial.println("\nBeginning sensors readings in 3 seconds...");
+    SERIALD.println("\nBeginning sensors readings in 3 seconds...");
     delay(3000);
 }
 
 void testConversionLoop() {
     sensors.readSensors();
     sensors.convertAnalogToDigital();
-    sensors.printAnalogReadings();
     sensors.printDigitalValues();
 }
 
@@ -107,12 +110,12 @@ void testLineDetectionSetup() {
 }
 
 void testLineDetectionLoop() {
-    Serial.print("Line position: ");
+    SERIALD.print("Line position: ");
     sensors.readSensors();
     sensors.convertAnalogToDigital();
     sensors.printDigitalValues();
-    Serial.println(sensors.readLine());
+    SERIALD.println(sensors.readLine());
 }
 
 ////////////////////////////////////RUN TEST/////////////////////////////////////
-TEST(testLineDetection)
+TEST(testConversion)
