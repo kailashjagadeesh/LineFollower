@@ -3,4 +3,10 @@
     <note priority="high" time="1576752819">
         Test junction detection
     </note>
+    <note priority="medium" time="1576769685" done="1576914764">
+        Buy / fix ultrasonic sensor
+        <comment>
+            fixed using pot. divider
+        </comment>
+    </note>
 </todo>
