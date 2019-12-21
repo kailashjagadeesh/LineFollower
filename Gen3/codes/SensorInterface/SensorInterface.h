@@ -3,6 +3,7 @@
 
 #include "TesterInterface.h"
 #include "LEDInterface.h"
+#include "PushButtonInterface.h"
 
 #ifndef NUM_SENSORS
 #define NUM_SENSORS 9
@@ -51,6 +52,7 @@ public:
 
     //analog outputs converted to digital using calibrated threshold values
     uint16_t digitalValues;
+    uint8_t nSensorsOnLine;
 
     //read values
     //read analog values and fill analogReadings[]
@@ -82,13 +84,13 @@ public:
 };
 
 //pin definitions
-const uint8_t Sensors::analogPins[12] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
+const uint8_t Sensors::analogPins[12] = {A8, A7, A6, A5, A4, A3, A2, A1, A0, A9, A10, A11};
 const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 38, 26, 32, 34, 30, 40};
 
 void Sensors::printDigitalValues()
 {
-    //SERIALD.print("Converted values: ");
-    //SERIALD.println(digitalValues, BIN);
+    SERIALD.print("Converted values: ");
+    SERIALD.println(digitalValues, BIN);
 }
 
 // void Sensors::attachAllInterrupts()
@@ -108,74 +110,74 @@ void Sensors::printDigitalValues()
 
 void Sensors::printCalibratedInfo()
 {
-    //SERIALD.println("Calibrated values: \n");
-    //SERIALD.println("WHITE:");
-    //SERIALD.print("MAX VALUES:\t");
+    SERIALD.println("Calibrated values: \n");
+    SERIALD.println("WHITE:");
+    SERIALD.print("MAX VALUES:\t");
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        //SERIALD.print(whiteValues.highValues[i]);
-        //SERIALD.print("\t");
+        SERIALD.print(whiteValues.highValues[i]);
+        SERIALD.print("\t");
     }
-    //SERIALD.print("\nMIN VALUES:\t");
+    SERIALD.print("\nMIN VALUES:\t");
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        //SERIALD.print(whiteValues.lowValues[i]);
-        //SERIALD.print("\t");
+        SERIALD.print(whiteValues.lowValues[i]);
+        SERIALD.print("\t");
     }
-    //SERIALD.print("\nAVG VALUES:\t");
+    SERIALD.print("\nAVG VALUES:\t");
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        //SERIALD.print(whiteValues.averageValues[i]);
-        //SERIALD.print("\t");
-    }
-
-    //SERIALD.println("\n\n\nBLACK:");
-    //SERIALD.print("MAX VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
-    {
-        //SERIALD.print(blackValues.highValues[i]);
-        //SERIALD.print("\t");
-    }
-    //SERIALD.print("\nMIN VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
-    {
-        //SERIALD.print(blackValues.lowValues[i]);
-        //SERIALD.print("\t");
-    }
-    //SERIALD.print("\nAVG VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
-    {
-        //SERIALD.print(blackValues.averageValues[i]);
-        //SERIALD.print("\t");
+        SERIALD.print(whiteValues.averageValues[i]);
+        SERIALD.print("\t");
     }
 
-    //SERIALD.println("\n\n\nTHRESHOLD VALUES:");
-    //SERIALD.print("THRESHOLD VALUES:\t");
+    SERIALD.println("\n\n\nBLACK:");
+    SERIALD.print("MAX VALUES:\t");
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
-        //SERIALD.print(calibratedValues.thresholdValues[i]);
-        //SERIALD.print("\t");
+        SERIALD.print(blackValues.highValues[i]);
+        SERIALD.print("\t");
+    }
+    SERIALD.print("\nMIN VALUES:\t");
+    for (int i = 0; i < NUM_SENSORS; ++i)
+    {
+        SERIALD.print(blackValues.lowValues[i]);
+        SERIALD.print("\t");
+    }
+    SERIALD.print("\nAVG VALUES:\t");
+    for (int i = 0; i < NUM_SENSORS; ++i)
+    {
+        SERIALD.print(blackValues.averageValues[i]);
+        SERIALD.print("\t");
+    }
+
+    SERIALD.println("\n\n\nTHRESHOLD VALUES:");
+    SERIALD.print("THRESHOLD VALUES:\t");
+    for (int i = 0; i < NUM_SENSORS; ++i)
+    {
+        SERIALD.print(calibratedValues.thresholdValues[i]);
+        SERIALD.print("\t");
     }
 }
 
 void Sensors::printAnalogReadings()
 {
-    //SERIALD.print("\n\nAnalog: ");
+    SERIALD.print("\n\nAnalog: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-        //SERIALD.print(analogReadings[i]);
-        //SERIALD.print("\t");
+        SERIALD.print(analogReadings[i]);
+        SERIALD.print("\t");
     }
 }
 
 void Sensors::printDigitalReadings()
 {
 
-    //SERIALD.print("\n\nDigital: ");
+    SERIALD.print("\n\nDigital: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-        //SERIALD.print(digitalReadings[i]);
-        //SERIALD.print("\t");
+        SERIALD.print(digitalReadings[i]);
+        SERIALD.print("\t");
     }
 }
 
@@ -189,12 +191,13 @@ void Sensors::calibrate()
         calibratedValues.thresholdValues[i] = 0;
     }
 
+
     LED::write(0, HIGH);
     LED::write(1, HIGH);
 
-    //SERIALD.println("Keep on white surface");
-    delay(5000);
-    //SERIALD.println("reading values...");
+    SERIALD.println("Keep on white surface");
+    PushButtonInterface::waitForButton(0);
+
     for (int i = 0; i < 100; i++)
     {
         readSensorsAnalog();
@@ -209,11 +212,10 @@ void Sensors::calibrate()
     }
 
     LED::write(0, LOW);
-    LED::write(1, LOW);
 
-    //SERIALD.println("Keep on black surface");
-    delay(5000);
-    //SERIALD.println("reading values...");
+    SERIALD.println("Keep on black surface");
+    PushButtonInterface::waitForButton(0);
+    
     for (int i = 0; i < 100; i++)
     {
         readSensorsAnalog();
@@ -233,16 +235,20 @@ void Sensors::calibrate()
         blackValues.averageValues[i] = (blackValues.highValues[i] + blackValues.lowValues[i]) / 2;
         calibratedValues.thresholdValues[i] = (whiteValues.lowValues[i] + blackValues.highValues[i]) / 2;
     }
+
+    LED::write(1, 0);
 }
 
 void Sensors::convertAnalogToDigital()
 {
     digitalValues = 0;
+    nSensorsOnLine = 0;
     for (int i = 0; i < NUM_SENSORS; ++i)
     {
         if (analogReadings[i] > calibratedValues.thresholdValues[i])
         {
             digitalValues |= (1 << (NUM_SENSORS - i - 1));
+            nSensorsOnLine ++;
         }
     }
 }
@@ -319,7 +325,6 @@ uint16_t Sensors::readLine()
             sum[1] += 1;
         }
     }
-
     return (sum[1] > 0) ? (sum[0] / sum[1]) : ((NUM_PIDSENSORS - 1) * 1000 / 2);
 }
 
