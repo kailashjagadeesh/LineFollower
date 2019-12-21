@@ -36,9 +36,8 @@ void LED::init() {
 void LED::write(int i, int v) {
     if (initialized)
         digitalWrite(pins[i], v);
-    else {
-        SERIALD.println("\n***error: LEDInterface::write : LEDs not initialized yet!");
-    }
+    else 
+        init();
 }
 
 #endif
