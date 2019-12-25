@@ -74,11 +74,11 @@ int16_t PIDControl::control(int16_t currentValue)
     errorSum = error + lastError;
 
     if (abs(error) > 1000/PID_CONVFACTOR) {
-        LED::write(0, HIGH);
+        // LED::write(0, HIGH);
         c = (*(kp+3)) * error + (*(kd+3)) * (error - lastError) + (*(ki+3)) * errorSum;
     }
     else {
-        LED::write(0, LOW);
+        // LED::write(0, LOW);
         c = (*kp) * error + (*kd) * (error - lastError) + (*ki) * errorSum;    
     }
 

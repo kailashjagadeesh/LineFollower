@@ -118,5 +118,20 @@ void testLineDetectionLoop() {
     SERIALD.println(sensors.readLine());
 }
 
+void testBackSetup() {
+    commonSetup();
+    sensors.calibrate();
+}
+
+void testBackLoop() {
+    SERIALD.print(sensors.rawOvershootSensorValue(0));
+    SERIALD.print(" ");
+    SERIALD.print(sensors.rawOvershootSensorValue(1));
+    SERIALD.print(" | ");
+    sensors.readSensorsAnalog();
+    sensors.convertAnalogToDigital();
+    sensors.printDigitalValues();
+}
+
 ////////////////////////////////////RUN TEST/////////////////////////////////////
-TEST(testConversion)
+TEST(testBack)

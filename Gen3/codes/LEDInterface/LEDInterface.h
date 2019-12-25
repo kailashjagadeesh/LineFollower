@@ -20,6 +20,7 @@ class LED {
     static void init();
     //write an LED pin
     static void write(int i, int v);
+    static void toggle(int i);
 };
 
 const int * const LED::pins = new int[NUM_LED] LED_PINS;
@@ -31,6 +32,10 @@ void LED::init() {
         pinMode(pins[i], OUTPUT);
 
     initialized = true;
+}
+
+void LED::toggle(int i) {
+    digitalWrite(pins[i], !digitalRead(pins[i]));
 }
 
 void LED::write(int i, int v) {

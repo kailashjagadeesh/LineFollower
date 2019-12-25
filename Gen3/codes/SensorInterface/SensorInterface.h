@@ -18,9 +18,12 @@
 #define NUM_SENSOR_CENTER_PINS 2
 #endif
 
-#ifndef SENSOR_OVRESHOOT_PINS
-#define SENSOR_OVERSHOOT_PINS {33, 35}
-#define NUM_SENSOR_OVERSHOOT_PINS 2
+#ifndef OVERSHOOT_PIN_LEFT
+#define OVERSHOOT_PIN_LEFT 33
+#endif
+
+#ifndef OVERSHOOT_PIN_RIGHT
+#define OVERSHOOT_PIN_RIGHT 35
 #endif
 
 #define CLASSIFICATION_THRESHOLD 511
@@ -35,6 +38,7 @@
 #define RMPin 30
 #define RB1Pin 26
 #define RB2Pin 32
+
 class Sensors
 {
     //ds to strore the readings
@@ -44,9 +48,12 @@ class Sensors
     static const uint8_t analogPins[12];
     static const uint8_t digitalPins[12];
     static const uint8_t sensorCenterPins[NUM_SENSOR_CENTER_PINS];
-    static const uint8_t overshootPins[NUM_SENSOR_OVERSHOOT_PINS];
+
 
 public:
+    static const uint8_t overshootLeftPin;
+    static const uint8_t overshootRightPin;
+
     struct CalibratedValues
     {
         uint16_t highValues[NUM_SENSORS];
@@ -74,8 +81,6 @@ public:
     //read both analog and digital pins
     void readSensors();
     void readCenterSensors();
-    bool readOvershootSensors();
-    int rawOvershootSensorValue(int);
     //convert analogReadings[] to digital form and fill digitalValues
     void convertAnalogToDigital();
 
@@ -84,6 +89,11 @@ public:
 
     //get line for PID
     uint16_t readLine();
+
+    //overshoot
+    void increaseJunction(uint8_t junction);
+    static void attachOvershootInterrupts();
+    bool overshootCompleted();
 
     Sensors();
 
@@ -98,27 +108,56 @@ public:
     void printDigitalValues();
 };
 
+//overshoot handles
+volatile uint8_t junctions[2] = {0}; 
+volatile int nJunctions = 0;
+volatile int jIndex = -1;
+
+uint8_t nextJunction() {
+    return junctions[0];
+}
+
+uint8_t popJunction() {
+    nJunctions --;
+
+    if (nJunctions % 2 == 0) {
+        junctions[0] = junctions[1];
+        junctions[1] = 0;
+        jIndex --;
+    }
+}
+
+uint8_t pushJunction(uint8_t p) {
+    nJunctions += 2;
+    jIndex++;
+    junctions[jIndex] = p;
+}
+
+void overshootJunctionLeftISR() {
+    if (nJunctions > 0)
+    if (nextJunction() == OVERSHOOT_PIN_LEFT) {
+        LED::toggle(1);
+        popJunction();
+    }
+}
+
+void overshootJunctionRightISR() {
+    if (nJunctions > 0)
+    if (nextJunction() == OVERSHOOT_PIN_RIGHT) {
+        LED::toggle(1);
+        popJunction();
+    }
+}
+
 //pin definitions
 const uint8_t Sensors::analogPins[12] = {A8, A7, A6, A5, A4, A3, A2, A1, A0, A9, A10, A11};
 const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 38, 26, 32, 34, 30, 40};
 const uint8_t Sensors::sensorCenterPins[NUM_SENSOR_CENTER_PINS] = SENSOR_CENTER_PINS;
-const uint8_t Sensors::overshootPins[NUM_SENSOR_OVERSHOOT_PINS] = SENSOR_OVERSHOOT_PINS;
+const uint8_t Sensors::overshootLeftPin = OVERSHOOT_PIN_LEFT;
+const uint8_t Sensors::overshootRightPin = OVERSHOOT_PIN_RIGHT;
 
-int Sensors::rawOvershootSensorValue(int pin) {
-    return digitalRead(overshootPins[pin]);
-}
-
-bool Sensors::readOvershootSensors() {
-    bool ret = false;
-
-    for (int i = 0; i < NUM_SENSOR_OVERSHOOT_PINS; ++i) {
-#ifndef WHITELINE_LOGIC
-        ret = ret || digitalRead(overshootPins[i]);
-#else
-        ret = ret || !digitalRead(overshootPins[i]);
-#endif
-    }
-    return ret;
+bool Sensors::overshootCompleted() {
+    return (nJunctions == 0);
 }
 
 void Sensors::readCenterSensors() {
@@ -283,6 +322,15 @@ void Sensors::convertAnalogToDigital()
     readCenterSensors();
 }
 
+void Sensors::increaseJunction(uint8_t j) {
+    pushJunction(j);
+}
+
+void Sensors::attachOvershootInterrupts() {
+    attachInterrupt(digitalPinToInterrupt(overshootLeftPin), overshootJunctionLeftISR, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(overshootRightPin), overshootJunctionRightISR, CHANGE);
+}
+
 Sensors::Sensors()
 {
     //initialize pins
@@ -296,9 +344,10 @@ Sensors::Sensors()
         pinMode(sensorCenterPins[i], INPUT);
     }
 
-    for  (int i = 0; i < NUM_SENSOR_OVERSHOOT_PINS; i++) {
-        pinMode(overshootPins[i], INPUT);
-    }
+    pinMode(overshootLeftPin, INPUT);
+    pinMode(overshootRightPin, INPUT);
+
+    attachOvershootInterrupts();
 }
 
 void Sensors::readSensorsAnalog()
