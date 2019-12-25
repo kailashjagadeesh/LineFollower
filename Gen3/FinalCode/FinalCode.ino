@@ -46,7 +46,6 @@ void loop()
     if (PushButtonInterface::readState(0))
     {
         motors.stopMotors();
-        SERIALD.println("Press button 2 to continue...");
         PushButtonInterface::waitForButton(1);
     }
 
@@ -57,5 +56,5 @@ void loop()
     motors.setLeftDirection(Motor::FRONT);
     motors.setRightDirection(Motor::FRONT);
 
-    //pid.setSpeedBasedOnCorrection(correction);
+    pid.setSpeedBasedOnCorrection(correction);
 }

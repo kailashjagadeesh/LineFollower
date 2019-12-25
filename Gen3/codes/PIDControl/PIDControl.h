@@ -6,6 +6,7 @@
 #endif
 
 #include "MotorDriverInterface.h"
+#include "LEDInterface.h"
 
 class PIDControl
 {
@@ -32,13 +33,13 @@ PIDControl::PIDControl(uint16_t _targetValue)
     kd = parameters + 1;
     ki = parameters + 2;
 
-    parameters[0] = 5.1; // Hard coded PID values
-    parameters[1] = 4.35;
+    parameters[0] = 4.7; // Hard coded PID values
+    parameters[1] = 5.35;
     parameters[2] = 0.00;
 
     //for sharp turns
-    parameters[3] = 8;
-    parameters[4] = 4.35;
+    parameters[3] = 15;
+    parameters[4] = 5;
     parameters[5] = 0;
 
     /*
@@ -73,9 +74,11 @@ int16_t PIDControl::control(int16_t currentValue)
     errorSum = error + lastError;
 
     if (abs(error) > 1000/PID_CONVFACTOR) {
+        LED::write(0, HIGH);
         c = (*(kp+3)) * error + (*(kd+3)) * (error - lastError) + (*(ki+3)) * errorSum;
     }
     else {
+        LED::write(0, LOW);
         c = (*kp) * error + (*kd) * (error - lastError) + (*ki) * errorSum;    
     }
 
@@ -109,8 +112,8 @@ public:
 
 void MotorPIDControl::setSpeedBasedOnCorrection(int16_t correction) {
     uint8_t newSpeed = baseSpeed;
-    newSpeed -= abs(correction);
-
+    newSpeed -= (abs(correction) > baseSpeed) ? baseSpeed : abs(correction);
+    
     if (correction > 0) {
         motors.setRightSpeed(newSpeed);
         motors.setLeftSpeed(baseSpeed);

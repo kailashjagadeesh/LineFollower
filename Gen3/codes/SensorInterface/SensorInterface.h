@@ -13,6 +13,16 @@
 #define NUM_PIDSENSORS 5
 #endif
 
+#ifndef SENSOR_CENTER_PINS
+#define SENSOR_CENTER_PINS {47, 49}
+#define NUM_SENSOR_CENTER_PINS 2
+#endif
+
+#ifndef SENSOR_OVRESHOOT_PINS
+#define SENSOR_OVERSHOOT_PINS {33, 35}
+#define NUM_SENSOR_OVERSHOOT_PINS 2
+#endif
+
 #define CLASSIFICATION_THRESHOLD 511
 #define CFPin 6
 
@@ -33,6 +43,8 @@ class Sensors
     //pin definitions
     static const uint8_t analogPins[12];
     static const uint8_t digitalPins[12];
+    static const uint8_t sensorCenterPins[NUM_SENSOR_CENTER_PINS];
+    static const uint8_t overshootPins[NUM_SENSOR_OVERSHOOT_PINS];
 
 public:
     struct CalibratedValues
@@ -61,6 +73,8 @@ public:
     void readSensorsDigital(volatile uint8_t *, volatile bool *);
     //read both analog and digital pins
     void readSensors();
+    void readCenterSensors();
+    bool readOvershootSensors();
     //convert analogReadings[] to digital form and fill digitalValues
     void convertAnalogToDigital();
 
@@ -86,27 +100,34 @@ public:
 //pin definitions
 const uint8_t Sensors::analogPins[12] = {A8, A7, A6, A5, A4, A3, A2, A1, A0, A9, A10, A11};
 const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 38, 26, 32, 34, 30, 40};
+const uint8_t Sensors::sensorCenterPins[NUM_SENSOR_CENTER_PINS] = SENSOR_CENTER_PINS;
+const uint8_t Sensors::overshootPins[NUM_SENSOR_OVERSHOOT_PINS] = SENSOR_OVERSHOOT_PINS;
+
+bool Sensors::readOvershootSensors() {
+    bool ret = false;
+
+
+    for (int i = 0; i < NUM_SENSOR_OVERSHOOT_PINS; ++i) {
+        ret = ret || digitalRead(overshootPins[i]);
+    }
+
+    return ret;
+}
+
+void Sensors::readCenterSensors() {
+    for (int i = 0; i < NUM_SENSOR_CENTER_PINS; ++i)
+    #ifdef WHITELINE_LOGIC
+        digitalValues |= (!digitalRead(sensorCenterPins[i]) << (NUM_SENSORS/2));
+    #else 
+        digitalValues |= (digitalRead(sensorCenterPins[i]) << (NUM_SENSORS/2));
+    #endif
+}
 
 void Sensors::printDigitalValues()
 {
     SERIALD.print("Converted values: ");
     SERIALD.println(digitalValues, BIN);
 }
-
-// void Sensors::attachAllInterrupts()
-// {
-//     attachInterrupt(digitalPinToInterrupt(CFPin), CFISR, CHANGE);
-
-//     attachInterrupt(digitalPinToInterrupt(LFPin), LFISR, CHANGE);
-//     attachInterrupt(digitalPinToInterrupt(LMPin), LMISR, CHANGE);
-//     attachInterrupt(digitalPinToInterrupt(LB1Pin), LB1ISR, CHANGE);
-//     attachInterrupt(digitalPinToInterrupt(LB2Pin), LB2ISR, CHANGE);
-
-//     attachInterrupt(digitalPinToInterrupt(RFPin), RFISR, CHANGE);
-//     attachInterrupt(digitalPinToInterrupt(RMPin), RMISR, CHANGE);
-//     attachInterrupt(digitalPinToInterrupt(RB1Pin), RB1ISR, CHANGE);
-//     attachInterrupt(digitalPinToInterrupt(RB2Pin), RB2ISR, CHANGE);
-// }
 
 void Sensors::printCalibratedInfo()
 {
@@ -251,6 +272,8 @@ void Sensors::convertAnalogToDigital()
             nSensorsOnLine ++;
         }
     }
+
+    readCenterSensors();
 }
 
 Sensors::Sensors()
@@ -260,6 +283,14 @@ Sensors::Sensors()
     {
         pinMode(digitalPins[i], INPUT);
         pinMode(analogPins[i], INPUT);
+    }
+
+    for (int i = 0; i < NUM_SENSOR_CENTER_PINS; i++) {
+        pinMode(sensorCenterPins[i], INPUT);
+    }
+
+    for  (int i = 0; i < NUM_SENSOR_OVERSHOOT_PINS; i++) {
+        pinMode(overshootPins[i], INPUT);
     }
 }
 

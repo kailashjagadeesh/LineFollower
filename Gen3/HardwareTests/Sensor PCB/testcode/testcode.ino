@@ -101,6 +101,7 @@ void testConversionSetup() {
 void testConversionLoop() {
     sensors.readSensors();
     sensors.convertAnalogToDigital();
+    sensors.printAnalogReadings();
     sensors.printDigitalValues();
 }
 
