@@ -75,6 +75,7 @@ public:
     void readSensors();
     void readCenterSensors();
     bool readOvershootSensors();
+    int rawOvershootSensorValue(int);
     //convert analogReadings[] to digital form and fill digitalValues
     void convertAnalogToDigital();
 
@@ -103,14 +104,20 @@ const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 38, 26, 32, 34, 30
 const uint8_t Sensors::sensorCenterPins[NUM_SENSOR_CENTER_PINS] = SENSOR_CENTER_PINS;
 const uint8_t Sensors::overshootPins[NUM_SENSOR_OVERSHOOT_PINS] = SENSOR_OVERSHOOT_PINS;
 
+int Sensors::rawOvershootSensorValue(int pin) {
+    return digitalRead(overshootPins[pin]);
+}
+
 bool Sensors::readOvershootSensors() {
     bool ret = false;
 
-
     for (int i = 0; i < NUM_SENSOR_OVERSHOOT_PINS; ++i) {
+#ifndef WHITELINE_LOGIC
         ret = ret || digitalRead(overshootPins[i]);
+#else
+        ret = ret || !digitalRead(overshootPins[i]);
+#endif
     }
-
     return ret;
 }
 
