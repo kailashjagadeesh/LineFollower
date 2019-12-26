@@ -6,6 +6,8 @@
 #include "../PushButtonInterface/PushButtonInterface.h"
 #include "../TesterInterface/TesterInterface.h"
 
+#include "../configure.h"
+
 #ifndef NUM_SENSORS
 #define NUM_SENSORS 9
 #endif

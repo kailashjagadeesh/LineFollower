@@ -1,0 +1,4 @@
+#define LED_PINS {15, 14}
+#define PID_CONVFACTOR 100
+#define NUM_PIDSENSORS 5
+#define PID_IDEAL 2000

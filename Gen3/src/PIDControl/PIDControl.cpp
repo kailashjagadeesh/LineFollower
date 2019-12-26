@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "../MotorDriverInterface/MotorDriverInterface.h"
 #include "../LEDInterface/LEDInterface.h"
+#include "../configure.h"
 
 #ifndef PID_CONVFACTOR
 #define PID_CONVFACTOR 1

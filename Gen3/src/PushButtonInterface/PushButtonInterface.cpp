@@ -1,8 +1,13 @@
 #include "PushButtonInterface.h"
+
 #include <Arduino.h>
+#include "../configure.h"
 
 #ifndef NUMBER_PUSHBUTTONS
 #define NUMBER_PUSHBUTTONS 2
+#endif 
+
+#ifndef PUSHBUTTON_PINS
 #define PUSHBUTTON_PINS {50, 2}
 #endif
 

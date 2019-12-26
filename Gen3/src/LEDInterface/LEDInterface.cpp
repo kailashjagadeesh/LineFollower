@@ -1,10 +1,12 @@
 #include "LEDInterface.h"
+#include "../configure.h"
 #include <Arduino.h>
 
 #ifndef NUM_LED
-//number of LED pins (LEDInterface)
 #define NUM_LED 2
-//Array of leds (LEDInterface)
+#endif
+
+#ifndef LED_PINS
 #define LED_PINS {14, 15}
 #endif
 

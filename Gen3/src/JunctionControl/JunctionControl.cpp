@@ -7,6 +7,7 @@
 #include "../UltrasonicInterface/UltrasonicInterface.h"
 #include "../PushButtonInterface/PushButtonInterface.h"
 #include "../MotorDriverInterface/MotorDriverInterface.h"
+#include "../configure.h"
 
 #ifndef ALGORITHM_LOGIC
 #define ALGORITHM_LOGIC LEFT_LOGIC
@@ -132,7 +133,7 @@ void JunctionControl::control(Junction j)
 
                 motors.setLeftDirection(Motor::FRONT);
                 motors.setRightDirection(Motor::FRONT);
-
+                
                 delay(MOTOR_JUNCTION_DELAY);
 
                 motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED/1.3);
