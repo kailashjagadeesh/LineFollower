@@ -1,15 +1,8 @@
-#ifndef TESTER_INTERFACE_H
-#define TESTER_INTERFACE_H
+#pragma once
 
-#ifndef SERIALD 
-//Serial to print debug info (TesterInterface)
-#define SERIALD Serial
-#endif
+#include <Arduino.h>
+#include "../BluetoothInterface/BluetoothInterface.h"
 
-#ifndef SERIALERR
-//Serial to print error info (TesterInterface)
-#define SERIALERR Serial
-#endif
 
 #define TEST(s) \
     void setup() { \
@@ -20,4 +13,33 @@
         s##Loop();\
     } 
     
-#endif
+
+class Debug {
+    static bool usingBluetooth;
+    static Bluetooth bluetooth;
+
+    public:
+    static void begin(int baud = 9600);
+
+    static void useBluetooth();
+
+    static void print(const char* );
+    static void println(const char* );
+
+    static void print(float);
+    static void println(float);
+
+    template <typename T>
+    static void print(T v, int radix = 10) {
+        if (usingBluetooth)
+            bluetooth.print(v, radix);
+        else
+            Serial.print(v, radix);
+    }
+
+    template <typename T>
+    static void println(T v, int radix = 10) {
+        print(v, radix);
+        print("\n");
+    }
+};

@@ -16,7 +16,7 @@ void Ultrasonic ::begin(int trig = 24, int echo = 22)
 }
 
 void Ultrasonic::calibrate() {
-    SERIALD.println("Keep the block at appropriate dist.");
+    Debug::println("Keep the block at appropriate dist.");
     PushButtonInterface::waitForButton(0);
 
     float dist = 0;

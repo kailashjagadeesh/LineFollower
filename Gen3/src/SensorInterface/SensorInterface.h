@@ -1,15 +1,11 @@
 #ifndef SENSOR_INTERFACE_H
 #define SENSOR_INTERFACE_H
 
-#include "../LEDInterface/LEDInterface.h"
-#include "../PushButtonInterface/PushButtonInterface.h"
-#include "../BluetoothInterface/BluetoothInterface.h"
 #include <stdint.h>
-
 
 class Sensors
 {
-    //ds to strore the readings
+    ///ds to strore the readings
     uint16_t analogReadings[12];
 
     //pin definitions
@@ -17,9 +13,6 @@ class Sensors
     static const uint8_t digitalPins[12];
     static const uint8_t sensorCenterPins[12];
 
-    Bluetooth bluetooth;
-
-    private:
     struct {
         int overshoots[2];
         int index = -1;
@@ -49,7 +42,6 @@ class Sensors
 
 
 public:
-
     uint8_t rearSensorStatus;
 
     struct CalibratedValues
@@ -63,20 +55,18 @@ public:
     {
         uint16_t thresholdValues[12];
     } calibratedValues;
-
-    //digital pin outputs
+   
+   //digital pin outputs
     uint16_t digitalReadings[12];
-
     //analog outputs converted to digital using calibrated threshold values
     uint16_t digitalValues;
     uint8_t nSensorsOnLine;
 
-    //read values
+    ///read values
     //read analog values and fill analogReadings[]
     void readSensorsAnalog();
     //read digital pins and fill digitalReadings[] 
-    void readSensorsDigital(volatile uint8_t *, volatile bool *);
-    //read both analog and digital pins
+    void readSensorsDigital();
     void readSensors();
     void readCenterSensors();
     uint8_t readRearSensors();
@@ -89,6 +79,7 @@ public:
     //get line for PID
     uint16_t readLine();
 
+    //construction
     Sensors();
 
     //debug info
@@ -109,6 +100,5 @@ public:
     void overshootControl();
 
 };
-
 
 #endif

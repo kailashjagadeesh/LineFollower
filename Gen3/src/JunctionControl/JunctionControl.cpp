@@ -45,9 +45,9 @@ void JunctionControl::updateState()
     sensors.convertAnalogToDigital();
     uint16_t sensorValues = sensors.digitalValues;
 
-    SERIALD.print("\nSensor: ");
-    SERIALD.print((uint32_t)(sensorValues), 2);
-    SERIALD.print("\tJunction: ");
+    Debug::print("\nSensor: ");
+    Debug::print((uint32_t)(sensorValues), 2);
+    Debug::print("\tJunction: ");
 
     backSensorState = sensorValues & (0b1111);
     backSensorState |= (sensorValues & (0b111100000)) >> 1;
@@ -105,7 +105,7 @@ void JunctionControl::detect()
 
 void JunctionControl::control(Junction j)
 {
-    SERIALD.print(junctionNames[j]);
+    Debug::print(junctionNames[j]);
 //*
     if (mode == DRY_RUN)
     {
@@ -143,7 +143,7 @@ void JunctionControl::control(Junction j)
 
                 do  {
                     updateState();
-                    SERIALD.print("left:");
+                    Debug::print("left:");
                 } while (!(CFState == 1 && (backSensorState & 0b00010000) == 0b00010000));
 
                 break;
@@ -174,13 +174,13 @@ void JunctionControl::turnLeft() {
     do
     {
         updateState();
-        SERIALD.print("left");
+        Debug::print("left");
     } while ((CFState == 1));
 
     do
     {
         updateState();
-        SERIALD.print("left:");
+        Debug::print("left:");
     } while (!(CFState == 1 && (backSensorState & 0b00010000) == 0b00010000));
 
     sensors.addLeftOvershoot();
@@ -211,7 +211,7 @@ void JunctionControl::turnRight() {
     do
     {
         updateState();  
-        SERIALD.print("right");
+        Debug::print("right");
     } while (!((backSensorStateInverted & 0b00010000) == 0b00010000) );
     
     sensors.addRightOvershoot();

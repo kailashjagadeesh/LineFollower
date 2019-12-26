@@ -1,7 +1,10 @@
 #include "SensorInterface.h"
 
 #include <Arduino.h>
-#include "../BluetoothInterface/BluetoothInterface.h"
+
+#include "../LEDInterface/LEDInterface.h"
+#include "../PushButtonInterface/PushButtonInterface.h"
+#include "../TesterInterface/TesterInterface.h"
 
 #ifndef NUM_SENSORS
 #define NUM_SENSORS 9
@@ -15,20 +18,6 @@
 #define SENSOR_CENTER_PINS {47, 49}
 #define NUM_SENSOR_CENTER_PINS 2
 #endif
-
-#define CLASSIFICATION_THRESHOLD 511
-#define CFPin 6
-
-#define LFPin 5
-#define LMPin 4
-#define LB1Pin 3
-#define LB2Pin 40
-
-#define RFPin 28
-#define RMPin 30
-#define RB1Pin 26
-#define RB2Pin 32
-
 
 ///overshoot handling
 bool Sensors::overshootCompleted() {
@@ -98,68 +87,68 @@ void Sensors::readCenterSensors() {
 
 void Sensors::printDigitalValues()
 {
-    bluetooth.print("Converted values: ");
-    bluetooth.println(digitalValues, BIN);
+    Debug::print("Converted values: ");
+    Debug::println(digitalValues, BIN);
 }
 
 void Sensors::printCalibratedInfo()
 {
-    bluetooth.println("Calibrated values: \n");
-    bluetooth.println("WHITE:");
-    bluetooth.print("MAX VALUES:\n\t");
+    Debug::println("Calibrated values: \n");
+    Debug::println("WHITE:");
+    Debug::print("MAX VALUES:\n\t");
     for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
-        bluetooth.print(whiteValues.highValues[i]);
-        bluetooth.print("\t");
+        Debug::print(whiteValues.highValues[i]);
+        Debug::print("\t");
     }
-    bluetooth.print("\nMIN VALUES:\n\t");
+    Debug::print("\nMIN VALUES:\n\t");
     for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
-        bluetooth.print(whiteValues.lowValues[i]);
-        bluetooth.print("\t");
-    }
-
-    bluetooth.println("\n\n\nBLACK:");
-    bluetooth.print("MAX VALUES:\n\t");
-    for (int i = 0; i < NUM_SENSORS + 2; ++i)
-    {
-        bluetooth.print(blackValues.highValues[i]);
-        bluetooth.print("\t");
-    }
-    bluetooth.print("\nMIN VALUES:\n\t");
-    for (int i = 0; i < NUM_SENSORS + 2; ++i)
-    {
-        bluetooth.print(blackValues.lowValues[i]);
-        bluetooth.print("\t");
+        Debug::print(whiteValues.lowValues[i]);
+        Debug::print("\t");
     }
 
-    bluetooth.println("\n\nTHRESHOLD VALUES:\n\t");
-    bluetooth.print("THRESHOLD VALUES:\n");
+    Debug::println("\n\n\nBLACK:");
+    Debug::print("MAX VALUES:\n\t");
     for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
-        bluetooth.print(calibratedValues.thresholdValues[i]);
-        bluetooth.print("\t");
+        Debug::print(blackValues.highValues[i]);
+        Debug::print("\t");
+    }
+    Debug::print("\nMIN VALUES:\n\t");
+    for (int i = 0; i < NUM_SENSORS + 2; ++i)
+    {
+        Debug::print(blackValues.lowValues[i]);
+        Debug::print("\t");
+    }
+
+    Debug::println("\n\nTHRESHOLD VALUES:\n\t");
+    Debug::print("THRESHOLD VALUES:\n");
+    for (int i = 0; i < NUM_SENSORS + 2; ++i)
+    {
+        Debug::print(calibratedValues.thresholdValues[i]);
+        Debug::print("\t");
     }
 }
 
 void Sensors::printAnalogReadings()
 {
-    bluetooth.print("\n\nAnalog: ");
+    Debug::print("\n\nAnalog: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-        bluetooth.print(analogReadings[i]);
-        bluetooth.print("\t");
+        Debug::print(analogReadings[i]);
+        Debug::print("\t");
     }
 }
 
 void Sensors::printDigitalReadings()
 {
 
-    bluetooth.print("\n\nDigital: ");
+    Debug::print("\n\nDigital: ");
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-        bluetooth.print(digitalReadings[i]);
-        bluetooth.print("\t");
+        Debug::print(digitalReadings[i]);
+        Debug::print("\t");
     }
 }
 
@@ -172,12 +161,10 @@ void Sensors::calibrate()
         blackValues.highValues[i] = blackValues.lowValues[i] = 0;
         calibratedValues.thresholdValues[i] = 0;
     }
-
-
     LED::write(0, HIGH);
     LED::write(1, HIGH);
 
-    bluetooth.println("Keep on white surface");
+    Debug::println("Keep on white surface");
     PushButtonInterface::waitForButton(0);
 
     for (int i = 0; i < 100; i++)
@@ -195,7 +182,7 @@ void Sensors::calibrate()
 
     LED::write(0, LOW);
 
-    bluetooth.println("Keep on black surface");
+    Debug::println("Keep on black surface");
     PushButtonInterface::waitForButton(0);
     
     for (int i = 0; i < 100; i++)
@@ -242,7 +229,6 @@ void Sensors::convertAnalogToDigital()
 
 Sensors::Sensors()
 {
-    bluetooth.begin();
     //initialize pins
     for (int i = 0; i < NUM_SENSORS+2; i++)
     {
@@ -267,10 +253,8 @@ void Sensors::readSensorsAnalog()
     }
 }
 // CF pin must be indexed 8th(count from 0)
-void Sensors::readSensorsDigital(volatile uint8_t *backSensorState, volatile bool *CFState)
+void Sensors::readSensorsDigital()
 {
-    *backSensorState = 0;
-    *CFState = 0;
     for (int i = 0; i < NUM_SENSORS; i++)
     {
 #ifdef WHITELINE_LOGIC
@@ -278,14 +262,7 @@ void Sensors::readSensorsDigital(volatile uint8_t *backSensorState, volatile boo
 #else
         digitalReadings[i] = !digitalRead(digitalPins[i]);
 #endif
-        if (i < 8)
-        {
-            (*backSensorState) |= digitalReadings[i] << (7 - i);
-        }
-        else if (i == 8)
-        {
-            *CFState = digitalReadings[i];
-        }
+    
     }
 }
 
@@ -301,7 +278,7 @@ void Sensors::readSensors()
         analogReadings[i] = 1023 - analogRead(analogPins[i]);
 #endif
     }
-}
+} 
 
 //Reads the sensor analog values and returns the position of the line
 uint16_t Sensors::readLine()

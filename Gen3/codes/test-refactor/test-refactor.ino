@@ -1,26 +1,15 @@
-#include "src/LEDInterface/LEDInterface.h"
-#include "src/PushButtonInterface/PushButtonInterface.h"
+#include "src/TesterInterface/TesterInterface.h"
 #include "src/SensorInterface/SensorInterface.h"
-#include "src/MotorDriverInterface/MotorDriverInterface.h"
-#include "src/PIDControl/PIDControl.h"
-#include "src/BluetoothInterface/BluetoothInterface.h"
-#include "src/UltrasonicInterface/UltrasonicInterface.h"
-#include "src/JunctionControl/JunctionControl.h"
+#include "src/Array/Array.h"
 
-Motor motors;
-Sensors sensors;
-Bluetooth bluetooth;
+Sensors sensors; 
 
 void setup() {
-    LED::init();
-    PushButtonInterface::init();
+    Debug::begin();
+    Debug::useBluetooth();
+
     sensors.calibrate();
-    sensors.printCalibratedInfo();
-    bluetooth.begin();
 }
 
 void loop() {
-    sensors.readSensors();
-    sensors.convertAnalogToDigital();
-    bluetooth.println(sensors.digitalValues);
 }
