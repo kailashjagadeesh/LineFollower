@@ -1,3 +1,12 @@
+//dependencies
+#include "src/BluetoothInterface/BluetoothInterface.h"
+#include "src/SensorInterface/SensorInterface.h"
+#include "src/PIDControl/PIDControl.h"
+#include "src/TesterInterface/TesterInterface.h"
+#include "src/MotorDriverInterface/MotorDriverInterface.h"
+#include "src/LEDInterface/LEDInterface.h"
+#include "src/JunctionControl/JunctionControl.h"
+
 ///configuration
 #define BLACKLINE_LOGIC
 #define SERIALD bluetooth
@@ -5,17 +14,7 @@
 #define NUM_PIDSENSORS 5
 #define PID_IDEAL 2000
 
-//dependencies
-#include "softwareSerial.h"
-
 Bluetooth bluetooth;
-
-#include "SensorInterface.h"
-#include "PIDControl.h"
-#include "TesterInterface.h"
-#include "MotorDriverInterface.h"
-#include "LEDInterface.h"
-#include "JunctionControl.h"
 
 //Bluetooth bluetooth;
 Sensors sensors;
@@ -43,7 +42,7 @@ void setup()
 
 void loop()
 {
-    if (PushButtonInterface::readState(0))
+    if (PushButtonInterface::read(0))
     {
         motors.stopMotors();
         PushButtonInterface::waitForButton(1);
