@@ -20,12 +20,15 @@ void LED::init() {
 }
 
 void LED::toggle(int i) {
+    if (!initialized)
+        init();
+        
     digitalWrite(pins[i], !digitalRead(pins[i]));
 }
 
 void LED::write(int i, int v) {
-    if (initialized)
-        digitalWrite(pins[i], v);
-    else 
+    if (!initialized)
         init();
+
+    digitalWrite(pins[i], v);
 }
