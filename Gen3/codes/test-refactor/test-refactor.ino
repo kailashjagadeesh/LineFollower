@@ -1,6 +1,6 @@
 #include "src/TesterInterface/TesterInterface.h"
 #include "src/SensorInterface/SensorInterface.h"
-#include "src/Array/Array.h"
+#include "src/PushButtonInterface/PushButtonInterface.h"
 
 Sensors sensors; 
 
@@ -9,7 +9,10 @@ void setup() {
     Debug::useBluetooth();
 
     sensors.calibrate();
+    sensors.printCalibratedInfo();
+    PushButtonInterface::waitForButton(0);
 }
 
-void loop() {
+void loop() { 
+    Debug::println(sensors.readRearSensors(), 2);
 }

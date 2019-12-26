@@ -30,6 +30,7 @@ public:
     }
 
     void setSpeedBasedOnCorrection(int16_t correction);
+    void setBaseSpeed(uint8_t speed);
 };
 
 #endif

@@ -21,6 +21,12 @@
 #define NUM_SENSOR_CENTER_PINS 2
 #endif
 
+#ifndef REAR_CENTER_PIN
+#define REAR_CENTER_PIN A11
+#endif
+
+const uint8_t Sensors::centerRearPin = REAR_CENTER_PIN;
+
 ///overshoot handling
 bool Sensors::overshootCompleted() {
     return (overshootData.index == -1);
@@ -64,18 +70,26 @@ const uint8_t Sensors::sensorCenterPins[12] = SENSOR_CENTER_PINS;
 uint8_t Sensors::readRearSensors() {
     rearSensorStatus = 0;
 #ifndef WHITELINE_LOGIC
-    if (analogRead(analogPins[9]) > calibratedValues.thresholdValues[9])
+    if (1023 - analogRead(analogPins[9]) < calibratedValues.thresholdValues[9])
         rearSensorStatus |= 0b10;
-    if (analogRead(analogPins[10]) > calibratedValues.thresholdValues[10]) 
+    if (1023 - analogRead(analogPins[10]) < calibratedValues.thresholdValues[10]) 
         rearSensorStatus |= 0b01;
 #else
-    if (analogRead(analogPins[9]) <= calibratedValues.thresholdValues[9])
+    if (analogRead(analogPins[9]) < calibratedValues.thresholdValues[9])
         rearSensorStatus |= 0b10;
-    if (analogRead(analogPins[10] <= calibratedValues.thresholdValues[10])) 
+    if (analogRead(analogPins[10] < calibratedValues.thresholdValues[10])) 
         rearSensorStatus |= 0b01;
 #endif
 
 return rearSensorStatus;
+}
+
+bool Sensors::rearCenterStatus() {
+#ifndef WHITELINE_LOGIC
+    return (1023 - analogRead(centerRearPin) < calibratedValues.thresholdValues[11]);
+#else 
+    return (analogRead(centerRearPin) < calibratedValues.thresholdValues[11]);
+#endif
 }
 
 void Sensors::readCenterSensors() {
@@ -98,13 +112,13 @@ void Sensors::printCalibratedInfo()
     Debug::println("Calibrated values: \n");
     Debug::println("WHITE:");
     Debug::print("MAX VALUES:\n\t");
-    for (int i = 0; i < NUM_SENSORS + 2; ++i)
+    for (int i = 0; i < NUM_SENSORS + 3; ++i)
     {
         Debug::print(whiteValues.highValues[i]);
         Debug::print("\t");
     }
     Debug::print("\nMIN VALUES:\n\t");
-    for (int i = 0; i < NUM_SENSORS + 2; ++i)
+    for (int i = 0; i < NUM_SENSORS + 3; ++i)
     {
         Debug::print(whiteValues.lowValues[i]);
         Debug::print("\t");
@@ -112,13 +126,13 @@ void Sensors::printCalibratedInfo()
 
     Debug::println("\n\n\nBLACK:");
     Debug::print("MAX VALUES:\n\t");
-    for (int i = 0; i < NUM_SENSORS + 2; ++i)
+    for (int i = 0; i < NUM_SENSORS + 3; ++i)
     {
         Debug::print(blackValues.highValues[i]);
         Debug::print("\t");
     }
     Debug::print("\nMIN VALUES:\n\t");
-    for (int i = 0; i < NUM_SENSORS + 2; ++i)
+    for (int i = 0; i < NUM_SENSORS + 3; ++i)
     {
         Debug::print(blackValues.lowValues[i]);
         Debug::print("\t");
@@ -126,7 +140,7 @@ void Sensors::printCalibratedInfo()
 
     Debug::println("\n\nTHRESHOLD VALUES:\n\t");
     Debug::print("THRESHOLD VALUES:\n");
-    for (int i = 0; i < NUM_SENSORS + 2; ++i)
+    for (int i = 0; i < NUM_SENSORS + 3; ++i)
     {
         Debug::print(calibratedValues.thresholdValues[i]);
         Debug::print("\t");
@@ -135,11 +149,10 @@ void Sensors::printCalibratedInfo()
 
 void Sensors::printAnalogReadings()
 {
-    Debug::print("\n\nAnalog: ");
-    for (int i = 0; i < NUM_SENSORS; i++)
+    for (int i = 0; i < NUM_SENSORS + 3; i++)
     {
         Debug::print(analogReadings[i]);
-        Debug::print("\t");
+        Debug::print(" ");
     }
 }
 
@@ -157,7 +170,7 @@ void Sensors::printDigitalReadings()
 void Sensors::calibrate()
 {
     //clear the readings
-    for (int i = 0; i < NUM_SENSORS +2; i++)
+    for (int i = 0; i < NUM_SENSORS + 3; i++)
     {
         whiteValues.highValues[i] = whiteValues.lowValues[i] = 0;
         blackValues.highValues[i] = blackValues.lowValues[i] = 0;
@@ -172,7 +185,7 @@ void Sensors::calibrate()
     for (int i = 0; i < 100; i++)
     {
         readSensorsAnalog();
-        for (int j = 0; j < NUM_SENSORS+2; ++j)
+        for (int j = 0; j < NUM_SENSORS+3; ++j)
         {
             if (analogReadings[j] > whiteValues.highValues[j])
                 whiteValues.highValues[j] = analogReadings[j];
@@ -190,7 +203,7 @@ void Sensors::calibrate()
     for (int i = 0; i < 100; i++)
     {
         readSensorsAnalog();
-        for (int j = 0; j < NUM_SENSORS+2; ++j)
+        for (int j = 0; j < NUM_SENSORS+3; ++j)
         {
             if (analogReadings[j] > blackValues.highValues[j])
                 blackValues.highValues[j] = analogReadings[j];
@@ -200,7 +213,7 @@ void Sensors::calibrate()
         }
     }
 
-    for (int i = 0; i < NUM_SENSORS + 2; ++i)
+    for (int i = 0; i < NUM_SENSORS + 3; ++i)
     {
         whiteValues.averageValues[i] = (whiteValues.highValues[i] + whiteValues.lowValues[i]) / 2;
         blackValues.averageValues[i] = (blackValues.highValues[i] + blackValues.lowValues[i]) / 2;
@@ -209,6 +222,7 @@ void Sensors::calibrate()
 
     calibratedValues.thresholdValues[9] = (whiteValues.highValues[9] + blackValues.lowValues[9])/2;
     calibratedValues.thresholdValues[10] = (whiteValues.highValues[10] + blackValues.lowValues[10])/2;
+    calibratedValues.thresholdValues[11] = (whiteValues.highValues[11] + blackValues.lowValues[11])/2;
 
     LED::write(1, 0);
 }
@@ -232,7 +246,7 @@ void Sensors::convertAnalogToDigital()
 Sensors::Sensors()
 {
     //initialize pins
-    for (int i = 0; i < NUM_SENSORS+2; i++)
+    for (int i = 0; i < NUM_SENSORS+3; i++)
     {
         pinMode(digitalPins[i], INPUT);
         pinMode(analogPins[i], INPUT);
@@ -245,7 +259,7 @@ Sensors::Sensors()
 
 void Sensors::readSensorsAnalog()
 {
-    for (int i = 0; i < NUM_SENSORS+2; i++)
+    for (int i = 0; i < NUM_SENSORS + 3; i++)
     {
 #ifdef WHITELINE_LOGIC
         analogReadings[i] = analogRead(analogPins[i]);
@@ -270,7 +284,7 @@ void Sensors::readSensorsDigital()
 
 void Sensors::readSensors()
 {
-    for (int i = 0; i < NUM_SENSORS; i++)
+    for (int i = 0; i < NUM_SENSORS + 3; i++)
     {
 #ifdef WHITELINE_LOGIC
         digitalReadings[i] = digitalRead(digitalPins[i]);

@@ -6,37 +6,30 @@
 #include "src/MotorDriverInterface/MotorDriverInterface.h"
 #include "src/LEDInterface/LEDInterface.h"
 #include "src/JunctionControl/JunctionControl.h"
-
-///configuration
-#define BLACKLINE_LOGIC
-#define SERIALD bluetooth
-#define PID_CONVFACTOR 100
-#define NUM_PIDSENSORS 5
-#define PID_IDEAL 2000
-
-Bluetooth bluetooth;
+#include "src/configure.h"
 
 //Bluetooth bluetooth;
 Sensors sensors;
 Motor motors;
 Ultrasonic ultrasonic;
 MotorPIDControl pid(PID_IDEAL, 255, motors);
-JunctionControl junctionControl(sensors, ultrasonic, motors);
+JunctionControl junctionControl(sensors, ultrasonic, motors, pid);
 
 void setup()
 {
-    bluetooth.begin();
+    Debug::begin();
+    Debug::useBluetooth();
     LED::init();
-    SERIALD.println("Meshmerize Finale!");
+    Debug::println("Meshmerize Finale!");
 
-    SERIALD.println("Calibration");
+    Debug::println("Calibration");
     sensors.calibrate();
 
-    SERIALD.println("Press the button to begin!");
+    Debug::println("Press the button to begin!");
     PushButtonInterface::waitForButton(0);
     delay(2000);
 
-    SERIALD.println("Started");
+    Debug::println("Started");
     motors.stopMotors();
 }
 

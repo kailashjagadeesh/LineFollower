@@ -12,6 +12,7 @@ class Sensors
     static const uint8_t analogPins[12];
     static const uint8_t digitalPins[12];
     static const uint8_t sensorCenterPins[12];
+    static const uint8_t centerRearPin;
 
     struct {
         int overshoots[2];
@@ -70,6 +71,7 @@ public:
     void readSensors();
     void readCenterSensors();
     uint8_t readRearSensors();
+    bool rearCenterStatus();
     //convert analogReadings[] to digital form and fill digitalValues
     void convertAnalogToDigital();
 

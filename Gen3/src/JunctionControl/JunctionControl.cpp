@@ -7,6 +7,7 @@
 #include "../UltrasonicInterface/UltrasonicInterface.h"
 #include "../PushButtonInterface/PushButtonInterface.h"
 #include "../MotorDriverInterface/MotorDriverInterface.h"
+#include "../LEDInterface/LEDInterface.h"
 #include "../configure.h"
 
 #ifndef ALGORITHM_LOGIC
@@ -30,7 +31,7 @@
 #endif
 
 
-JunctionControl::JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor &_motors) : sensors(_sensors), ultrasonic(_ultrasonic), motors(_motors)
+JunctionControl::JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor &_motors, MotorPIDControl& _pid) : sensors(_sensors), ultrasonic(_ultrasonic), motors(_motors), pid(_pid)
 {
     backSensorState = 0;
     CFState = false;
@@ -38,6 +39,11 @@ JunctionControl::JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Mot
 
     algorithm = ALGORITHM_LOGIC;
     mode = DRY_RUN;
+    paused = 0;
+}
+
+void JunctionControl::pause(uint32_t m) {
+    paused = m + millis();
 }
 
 void JunctionControl::updateState()
@@ -61,7 +67,8 @@ void JunctionControl::updateState()
 void JunctionControl::detect()
 {
     updateState();
-                                                                                                      // Block detected condition
+                      
+    if (millis() > paused)
     if (blockDetectFlag == 1)
     {
         control(BL);
@@ -102,6 +109,9 @@ void JunctionControl::detect()
     else if (CFState == 0 && backSensorState == 0) {
         control(END);
     }
+    else if((CFState==1) && (backSensorStateInverted == 255)) {
+        control(X);
+    }
 }
 
 void JunctionControl::control(Junction j)
@@ -124,7 +134,24 @@ void JunctionControl::control(Junction j)
                 turnRight();
                 break;
 
+            case X:
+                if (!turnLeft()) {
+                    motors.stopMotors();
+                    Debug::println("------------------------");
+                    while (!PushButtonInterface::read(0)) {
+                        LED::toggle(1);
+                        delay(1000);
+                    }
+
+                    //TODO finish and algorithm
+                    //path reduce
+                    // change mode
+                }
+                break;
+
             case RS:
+                sensors.addRightOvershoot();
+                pause();
                 break;
 
             case END:
@@ -134,7 +161,7 @@ void JunctionControl::control(Junction j)
                 motors.setLeftDirection(Motor::FRONT);
                 motors.setRightDirection(Motor::FRONT);
                 
-                delay(MOTOR_JUNCTION_DELAY);
+                while (sensors.rearCenterStatus());
 
                 motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED/1.3);
                 motors.setRightSpeed(MOTOR_EXCESS_TURN_SPEED/1.3);
@@ -142,10 +169,14 @@ void JunctionControl::control(Junction j)
                 motors.setLeftDirection(Motor::BACK);
                 motors.setRightDirection(Motor::FRONT);
 
+                delay(750);
+
                 do  {
                     updateState();
                     Debug::print("left:");
                 } while (!(CFState == 1 && (backSensorState & 0b00010000) == 0b00010000));
+
+                pid.setBaseSpeed(180);
 
                 break;
             }
@@ -154,7 +185,7 @@ void JunctionControl::control(Junction j)
     /**/
 }
 
-void JunctionControl::turnLeft() {
+bool JunctionControl::turnLeft() {
     //overshoot
     sensors.addLeftOvershoot();
 
@@ -165,6 +196,9 @@ void JunctionControl::turnLeft() {
     motors.setRightDirection(Motor::FRONT);
     
     sensors.waitForOvershoot();
+    //finish
+    updateState();
+    if (sensors.digitalValues == 0b111111111) return false;
 
     //turn
     motors.setLeftDirection(Motor::BACK);
@@ -185,13 +219,10 @@ void JunctionControl::turnLeft() {
     } while (!(CFState == 1 && (backSensorState & 0b00010000) == 0b00010000));
 
     sensors.addLeftOvershoot();
-
-    //buffer sudden change in direction 
-    motors.stopMotors();
-    delay(100);
+    return true;
 }
 
-void JunctionControl::turnRight() {
+bool JunctionControl::turnRight() {
     //overshoot
     sensors.addRightOvershoot();
 
@@ -202,6 +233,9 @@ void JunctionControl::turnRight() {
     motors.setRightDirection(Motor::FRONT);
     
     sensors.waitForOvershoot();
+    //finish
+    updateState();
+    if (sensors.digitalValues == 0b111111111) return false;
 
     //turning
     motors.setLeftDirection(Motor::FRONT);
@@ -216,4 +250,5 @@ void JunctionControl::turnRight() {
     } while (!((backSensorStateInverted & 0b00010000) == 0b00010000) );
     
     sensors.addRightOvershoot();
+    return true;
 }

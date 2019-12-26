@@ -5,6 +5,7 @@
 #include "../UltrasonicInterface/UltrasonicInterface.h"
 #include "../PushButtonInterface/PushButtonInterface.h"
 #include "../MotorDriverInterface/MotorDriverInterface.h"
+#include "../PIDControl/PIDControl.h"
 
 #include <stdint.h>
 
@@ -67,18 +68,22 @@ class JunctionControl
     Sensors &sensors;
     Ultrasonic &ultrasonic;
     Motor &motors;
+    MotorPIDControl &pid;
 
     Algorithm algorithm;
     Mode mode;
 
-    void turnLeft();
-    void turnRight();
+    bool turnLeft();
+    bool turnRight();
+
+    uint32_t paused;
 
 public:
     void updateState();
     void detect();
     void control(Junction);
-    JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor &_motors);
+    JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor &_motors, MotorPIDControl&);
+    void pause(uint32_t m = 100);
 };
 
 #endif

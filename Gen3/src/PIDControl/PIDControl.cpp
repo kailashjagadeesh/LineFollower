@@ -5,6 +5,18 @@
 #include "../LEDInterface/LEDInterface.h"
 #include "../configure.h"
 
+#ifndef KP
+#define KP 1
+#endif
+
+#ifndef KD
+#define KD 1
+#endif
+
+#ifndef KI
+#define KI 1
+#endif
+
 #ifndef PID_CONVFACTOR
 #define PID_CONVFACTOR 1
 #endif
@@ -20,9 +32,9 @@ PIDControl::PIDControl(uint16_t _targetValue)
     kd = parameters + 1;
     ki = parameters + 2;
 
-    parameters[0] = 9; // Hard coded PID values
-    parameters[1] = 6;
-    parameters[2] = 0.00;
+    parameters[0] = KP; // Hard coded PID values
+    parameters[1] = KD;
+    parameters[2] = KI;
 
     //for sharp turns
     parameters[3] = parameters[0];
@@ -64,8 +76,16 @@ void PIDControl::clear()
     lastError = 0;
 }
 
+void MotorPIDControl::setBaseSpeed(uint8_t speed)  {
+    baseSpeed = speed;
+}
+
 
 void MotorPIDControl::setSpeedBasedOnCorrection(int16_t correction) {
+    if (baseSpeed < 255) {
+        baseSpeed ++;
+    }
+
     uint8_t newSpeed = baseSpeed;
     newSpeed -= (abs(correction) > baseSpeed) ? baseSpeed : abs(correction);
     
