@@ -51,6 +51,7 @@ void loop()
 
     int16_t correction = pid.control(sensors.readLine());
 
+    sensors.overshootControl();
     junctionControl.detect();
 
     motors.setLeftDirection(Motor::FRONT);

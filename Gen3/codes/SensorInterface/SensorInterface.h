@@ -18,14 +18,6 @@
 #define NUM_SENSOR_CENTER_PINS 2
 #endif
 
-#ifndef OVERSHOOT_PIN_LEFT
-#define OVERSHOOT_PIN_LEFT 33
-#endif
-
-#ifndef OVERSHOOT_PIN_RIGHT
-#define OVERSHOOT_PIN_RIGHT 35
-#endif
-
 #define CLASSIFICATION_THRESHOLD 511
 #define CFPin 6
 
@@ -39,6 +31,7 @@
 #define RB1Pin 26
 #define RB2Pin 32
 
+
 class Sensors
 {
     //ds to strore the readings
@@ -49,21 +42,49 @@ class Sensors
     static const uint8_t digitalPins[12];
     static const uint8_t sensorCenterPins[NUM_SENSOR_CENTER_PINS];
 
+    private:
+    struct {
+        int overshoots[2];
+        int index = -1;
+
+        int left = 0;
+        int right = 1;
+
+        uint8_t prevState = 0;
+
+        int nextOvershoot() {
+            return overshoots[0];
+        }
+
+        void push(int d) {
+            index++;
+            overshoots[index] = d;
+        }
+
+        void pop() {
+            if (index >= 0) {
+                index --;
+                overshoots[index] = overshoots[index+1];
+                overshoots[index+1] = 0;
+            }
+        }
+    } overshootData;
+
 
 public:
-    static const uint8_t overshootLeftPin;
-    static const uint8_t overshootRightPin;
+
+    uint8_t rearSensorStatus;
 
     struct CalibratedValues
     {
-        uint16_t highValues[NUM_SENSORS];
-        uint16_t lowValues[NUM_SENSORS];
-        uint16_t averageValues[NUM_SENSORS];
+        uint16_t highValues[NUM_SENSORS+2];
+        uint16_t lowValues[NUM_SENSORS+2];
+        uint16_t averageValues[NUM_SENSORS+2];
     } whiteValues, blackValues;
 
     struct
     {
-        uint16_t thresholdValues[NUM_SENSORS];
+        uint16_t thresholdValues[NUM_SENSORS+2];
     } calibratedValues;
 
     //digital pin outputs
@@ -81,6 +102,7 @@ public:
     //read both analog and digital pins
     void readSensors();
     void readCenterSensors();
+    uint8_t readRearSensors();
     //convert analogReadings[] to digital form and fill digitalValues
     void convertAnalogToDigital();
 
@@ -89,11 +111,6 @@ public:
 
     //get line for PID
     uint16_t readLine();
-
-    //overshoot
-    void increaseJunction(uint8_t junction);
-    static void attachOvershootInterrupts();
-    bool overshootCompleted();
 
     Sensors();
 
@@ -106,58 +123,71 @@ public:
     void printDigitalReadings();
     //print digitalValues
     void printDigitalValues();
+
+    ///overshoot interface
+    bool overshootCompleted();
+    void addLeftOvershoot();
+    void addRightOvershoot();
+    void waitForOvershoot();
+    void overshootControl();
+
 };
 
-//overshoot handles
-volatile uint8_t junctions[2] = {0}; 
-volatile int nJunctions = 0;
-volatile int jIndex = -1;
-
-uint8_t nextJunction() {
-    return junctions[0];
+///overshoot handling
+bool Sensors::overshootCompleted() {
+    return (overshootData.index == -1);
 }
 
-uint8_t popJunction() {
-    nJunctions --;
+void Sensors::addLeftOvershoot() {
+    overshootData.push(overshootData.left);
+}
 
-    if (nJunctions % 2 == 0) {
-        junctions[0] = junctions[1];
-        junctions[1] = 0;
-        jIndex --;
+void Sensors::addRightOvershoot() {
+    overshootData.push(overshootData.right);
+}
+
+void Sensors::waitForOvershoot() {
+    while (!overshootCompleted()) {
+        overshootControl();
     }
 }
 
-uint8_t pushJunction(uint8_t p) {
-    nJunctions += 2;
-    jIndex++;
-    junctions[jIndex] = p;
-}
+void Sensors::overshootControl() {
+    uint8_t currentState = readRearSensors();
+    uint8_t currentLeft = currentState & 0b10;
+    uint8_t currentRight = currentState & 0b01;
 
-void overshootJunctionLeftISR() {
-    if (nJunctions > 0)
-    if (nextJunction() == OVERSHOOT_PIN_LEFT) {
-        LED::toggle(1);
-        popJunction();
-    }
-}
+    uint8_t prevLeft = overshootData.prevState & 0b10;
+    uint8_t prevRight = overshootData.prevState & 0b01;
 
-void overshootJunctionRightISR() {
-    if (nJunctions > 0)
-    if (nextJunction() == OVERSHOOT_PIN_RIGHT) {
-        LED::toggle(1);
-        popJunction();
-    }
+    if (((overshootData.nextOvershoot() == overshootData.left) && (prevLeft - currentLeft > 0))
+        || ((overshootData.nextOvershoot() == overshootData.right) && (prevRight - currentRight > 0))) {
+        overshootData.pop();
+    } 
+
+    overshootData.prevState = currentState;
 }
 
 //pin definitions
 const uint8_t Sensors::analogPins[12] = {A8, A7, A6, A5, A4, A3, A2, A1, A0, A9, A10, A11};
 const uint8_t Sensors::digitalPins[12] = {6, 5, 4, 3, 36, 28, 38, 26, 32, 34, 30, 40};
 const uint8_t Sensors::sensorCenterPins[NUM_SENSOR_CENTER_PINS] = SENSOR_CENTER_PINS;
-const uint8_t Sensors::overshootLeftPin = OVERSHOOT_PIN_LEFT;
-const uint8_t Sensors::overshootRightPin = OVERSHOOT_PIN_RIGHT;
 
-bool Sensors::overshootCompleted() {
-    return (nJunctions == 0);
+uint8_t Sensors::readRearSensors() {
+    rearSensorStatus = 0;
+#ifndef WHITELINE_LOGIC
+    if (analogRead(analogPins[9]) > calibratedValues.thresholdValues[9])
+        rearSensorStatus |= 0b10;
+    if (analogRead(analogPins[10]) > calibratedValues.thresholdValues[10]) 
+        rearSensorStatus |= 0b01;
+#else
+    if (analogRead(analogPins[9]) <= calibratedValues.thresholdValues[9])
+        rearSensorStatus |= 0b10;
+    if (analogRead(analogPins[10] <= calibratedValues.thresholdValues[10])) 
+        rearSensorStatus |= 0b01;
+#endif
+
+return rearSensorStatus;
 }
 
 void Sensors::readCenterSensors() {
@@ -179,48 +209,36 @@ void Sensors::printCalibratedInfo()
 {
     SERIALD.println("Calibrated values: \n");
     SERIALD.println("WHITE:");
-    SERIALD.print("MAX VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
+    SERIALD.print("MAX VALUES:\n\t");
+    for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
         SERIALD.print(whiteValues.highValues[i]);
         SERIALD.print("\t");
     }
-    SERIALD.print("\nMIN VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
+    SERIALD.print("\nMIN VALUES:\n\t");
+    for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
         SERIALD.print(whiteValues.lowValues[i]);
         SERIALD.print("\t");
     }
-    SERIALD.print("\nAVG VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
-    {
-        SERIALD.print(whiteValues.averageValues[i]);
-        SERIALD.print("\t");
-    }
 
     SERIALD.println("\n\n\nBLACK:");
-    SERIALD.print("MAX VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
+    SERIALD.print("MAX VALUES:\n\t");
+    for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
         SERIALD.print(blackValues.highValues[i]);
         SERIALD.print("\t");
     }
-    SERIALD.print("\nMIN VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
+    SERIALD.print("\nMIN VALUES:\n\t");
+    for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
         SERIALD.print(blackValues.lowValues[i]);
         SERIALD.print("\t");
     }
-    SERIALD.print("\nAVG VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
-    {
-        SERIALD.print(blackValues.averageValues[i]);
-        SERIALD.print("\t");
-    }
 
-    SERIALD.println("\n\n\nTHRESHOLD VALUES:");
-    SERIALD.print("THRESHOLD VALUES:\t");
-    for (int i = 0; i < NUM_SENSORS; ++i)
+    SERIALD.println("\n\nTHRESHOLD VALUES:\n\t");
+    SERIALD.print("THRESHOLD VALUES:\n");
+    for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
         SERIALD.print(calibratedValues.thresholdValues[i]);
         SERIALD.print("\t");
@@ -251,7 +269,7 @@ void Sensors::printDigitalReadings()
 void Sensors::calibrate()
 {
     //clear the readings
-    for (int i = 0; i < NUM_SENSORS; i++)
+    for (int i = 0; i < NUM_SENSORS +2; i++)
     {
         whiteValues.highValues[i] = whiteValues.lowValues[i] = 0;
         blackValues.highValues[i] = blackValues.lowValues[i] = 0;
@@ -268,7 +286,7 @@ void Sensors::calibrate()
     for (int i = 0; i < 100; i++)
     {
         readSensorsAnalog();
-        for (int j = 0; j < NUM_SENSORS; ++j)
+        for (int j = 0; j < NUM_SENSORS+2; ++j)
         {
             if (analogReadings[j] > whiteValues.highValues[j])
                 whiteValues.highValues[j] = analogReadings[j];
@@ -286,7 +304,7 @@ void Sensors::calibrate()
     for (int i = 0; i < 100; i++)
     {
         readSensorsAnalog();
-        for (int j = 0; j < NUM_SENSORS; ++j)
+        for (int j = 0; j < NUM_SENSORS+2; ++j)
         {
             if (analogReadings[j] > blackValues.highValues[j])
                 blackValues.highValues[j] = analogReadings[j];
@@ -296,12 +314,15 @@ void Sensors::calibrate()
         }
     }
 
-    for (int i = 0; i < NUM_SENSORS; ++i)
+    for (int i = 0; i < NUM_SENSORS + 2; ++i)
     {
         whiteValues.averageValues[i] = (whiteValues.highValues[i] + whiteValues.lowValues[i]) / 2;
         blackValues.averageValues[i] = (blackValues.highValues[i] + blackValues.lowValues[i]) / 2;
         calibratedValues.thresholdValues[i] = (whiteValues.lowValues[i] + blackValues.highValues[i]) / 2;
     }
+
+    calibratedValues.thresholdValues[9] = (whiteValues.highValues[9] + blackValues.lowValues[9])/2;
+    calibratedValues.thresholdValues[10] = (whiteValues.highValues[10] + blackValues.lowValues[10])/2;
 
     LED::write(1, 0);
 }
@@ -322,19 +343,10 @@ void Sensors::convertAnalogToDigital()
     readCenterSensors();
 }
 
-void Sensors::increaseJunction(uint8_t j) {
-    pushJunction(j);
-}
-
-void Sensors::attachOvershootInterrupts() {
-    attachInterrupt(digitalPinToInterrupt(overshootLeftPin), overshootJunctionLeftISR, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(overshootRightPin), overshootJunctionRightISR, CHANGE);
-}
-
 Sensors::Sensors()
 {
     //initialize pins
-    for (int i = 0; i < NUM_SENSORS; i++)
+    for (int i = 0; i < NUM_SENSORS+2; i++)
     {
         pinMode(digitalPins[i], INPUT);
         pinMode(analogPins[i], INPUT);
@@ -343,16 +355,11 @@ Sensors::Sensors()
     for (int i = 0; i < NUM_SENSOR_CENTER_PINS; i++) {
         pinMode(sensorCenterPins[i], INPUT);
     }
-
-    pinMode(overshootLeftPin, INPUT);
-    pinMode(overshootRightPin, INPUT);
-
-    attachOvershootInterrupts();
 }
 
 void Sensors::readSensorsAnalog()
 {
-    for (int i = 0; i < NUM_SENSORS; i++)
+    for (int i = 0; i < NUM_SENSORS+2; i++)
     {
 #ifdef WHITELINE_LOGIC
         analogReadings[i] = analogRead(analogPins[i]);

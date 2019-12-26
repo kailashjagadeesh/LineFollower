@@ -18,7 +18,7 @@
 #endif
 
 #ifndef MOTOR_JUNCTION_DELAY
-#define MOTOR_JUNCTION_DELAY 75
+#define MOTOR_JUNCTION_DELAY 500
 #endif
 
 #include "SensorInterface.h"
@@ -129,42 +129,33 @@ void JunctionControl::detect()
         control(BL);
         blockDetectFlag = 0;
     }
-    else if (sensors.nSensorsOnLine > 3)
+    else if ((CFState == 0) && (backSensorState & 0b11) == 0b11 && (backSensorStateInverted & 0b11) == 0b11)
     {
-        if (0)
-            ;
-        // else if ((CFState == 1) && (backSensorState & 0b11000011) == 0b11000011)
-        // {
-        //     control(X);
-        // }
-        else if ((CFState == 0) && (backSensorState & 0b11) > 0 && (backSensorStateInverted & 0b11) > 0)
-        {
-            control(T);
-        }
-        // // Straight Right detection
-        else if (((CFState == 1) && (backSensorState & 0b11100111) == 0b111) ||
-                    (backSensorState == 0b0110011))
-        {
-            control(RS);
-        }
-        // // Straight Left detection
-        else if (((CFState == 1) && (backSensorStateInverted & 0b11100111) == 0b111) || 
-                    (backSensorStateInverted == 0b0110011))
-        {
-            control(LS);
-        }
-        // //90 degree right
-        else if ((CFState == 0) && (backSensorState & 0b11100111) == 0b111)
-        {
-            control(R);
-        }
-        // //90 degrees left
-        else if ((CFState == 0) && (backSensorStateInverted & 0b11100111) == 0b111)
-        {
-            control(L);
-        }
-    } 
-    else if (sensors.nSensorsOnLine == 0) {
+        control(T);
+    }
+    // // Straight Right detection
+    else if ((CFState == 1) && (((backSensorState & 0b11100011) == 0b11) ||
+                (backSensorState == 0b0110011)))
+    {
+        control(RS);
+    }
+    // // Straight Left detection
+    else if ((CFState == 1) && (((backSensorStateInverted & 0b11100011) == 0b11) || 
+                (backSensorStateInverted == 0b0110011)))
+    {
+        control(LS);
+    }
+    // //90 degree right
+    else if ((CFState == 0) && ((backSensorState & 0b11100011) == 0b11))
+    {
+        control(R);
+    }
+    // //90 degrees left
+    else if ((CFState == 0) && ((backSensorStateInverted & 0b11100011) == 0b11))
+    {
+        control(L);
+    }
+    else if (CFState == 0 && backSensorState == 0) {
         control(END);
     }
 }
@@ -180,43 +171,13 @@ void JunctionControl::control(Junction j)
             switch (j)
             {
             case L:
+            case LS:
             case T:
                 turnLeft();
                 break;
 
             case R:
                 turnRight();
-                break;
-
-            case X:
-            case LS:
-                motors.setLeftSpeed(MOTOR_OVERSHOOT_SPEED);
-                motors.setRightSpeed(MOTOR_OVERSHOOT_SPEED);
-
-                motors.setLeftDirection(Motor::FRONT);
-                motors.setRightDirection(Motor::FRONT);
-
-                delay(MOTOR_JUNCTION_DELAY);
-
-                motors.setLeftDirection(Motor::BACK);
-                motors.setRightDirection(Motor::FRONT);
-                motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED);
-                motors.setRightSpeed(MOTOR_TURN_SPEED);
-
-                do
-                {
-                    updateState();
-                    SERIALD.print("left");
-                } while ((CFState == 1));
-
-                do
-                {
-                    updateState();
-                    SERIALD.print("left");
-                } while (!(CFState == 1 && (backSensorState & 0b00010000 == 0b00010000)));
-
-                motors.stopMotors();
-                PushButtonInterface::waitForButton(0);
                 break;
 
             case RS:
@@ -229,18 +190,19 @@ void JunctionControl::control(Junction j)
                 motors.setLeftDirection(Motor::FRONT);
                 motors.setRightDirection(Motor::FRONT);
 
+                sensors.waitForOvershoot();
                 delay(MOTOR_JUNCTION_DELAY);
 
-                motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED);
-                motors.setRightSpeed(MOTOR_EXCESS_TURN_SPEED);
+                motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED/1.3);
+                motors.setRightSpeed(MOTOR_EXCESS_TURN_SPEED/1.3);
 
-                motors.setLeftDirection(Motor::FRONT);
-                motors.setRightDirection(Motor::BACK);
+                motors.setLeftDirection(Motor::BACK);
+                motors.setRightDirection(Motor::FRONT);
 
-                do {
+                do  {
                     updateState();
-                    SERIALD.print("left");
-                } while ((CFState == 0));
+                    SERIALD.print("left:");
+                } while (!(CFState == 1 && (backSensorState & 0b00010000) == 0b00010000));
 
                 break;
             }
@@ -251,7 +213,7 @@ void JunctionControl::control(Junction j)
 
 void JunctionControl::turnLeft() {
     //overshoot
-    sensors.increaseJunction(sensors.overshootLeftPin);
+    sensors.addLeftOvershoot();
 
     motors.setLeftSpeed(MOTOR_OVERSHOOT_SPEED);
     motors.setRightSpeed(MOTOR_OVERSHOOT_SPEED);
@@ -259,22 +221,7 @@ void JunctionControl::turnLeft() {
     motors.setLeftDirection(Motor::FRONT);
     motors.setRightDirection(Motor::FRONT);
     
-    LED::write(0, HIGH);
-    while (!sensors.overshootCompleted());
-    motors.stopMotors();
-    LED::write(0, LOW);
-
-    // while (!sensors.readOvershootSensors()) {
-    //     SERIALD.print(sensors.rawOvershootSensorValue(0));
-    //     SERIALD.println(sensors.rawOvershootSensorValue(1));
-    // }
-    // SERIALD.println("-");
-    // SERIALD.println(sensors.readOvershootSensors());
-    // SERIALD.println("-");
-    // while (sensors.readOvershootSensors()) {
-    //     SERIALD.print(sensors.rawOvershootSensorValue(0));
-    //     SERIALD.println(sensors.rawOvershootSensorValue(1));
-    // }
+    sensors.waitForOvershoot();
 
     //turn
     motors.setLeftDirection(Motor::BACK);
@@ -285,15 +232,25 @@ void JunctionControl::turnLeft() {
     do
     {
         updateState();
+        SERIALD.print("left");
+    } while ((CFState == 1));
+
+    do
+    {
+        updateState();
         SERIALD.print("left:");
     } while (!(CFState == 1 && (backSensorState & 0b00010000) == 0b00010000));
 
-    sensors.increaseJunction(sensors.overshootLeftPin);
+    sensors.addLeftOvershoot();
+
+    //buffer sudden change in direction 
+    motors.stopMotors();
+    delay(100);
 }
 
 void JunctionControl::turnRight() {
     //overshoot
-    sensors.increaseJunction(sensors.overshootRightPin);
+    sensors.addRightOvershoot();
 
     motors.setLeftSpeed(MOTOR_OVERSHOOT_SPEED);
     motors.setRightSpeed(MOTOR_OVERSHOOT_SPEED);
@@ -301,22 +258,7 @@ void JunctionControl::turnRight() {
     motors.setLeftDirection(Motor::FRONT);
     motors.setRightDirection(Motor::FRONT);
     
-    LED::write(0, HIGH);
-    while (!sensors.overshootCompleted());
-    motors.stopMotors();
-    LED::write(0, LOW);
-    
-    // while (!sensors.readOvershootSensors()) {
-    //     SERIALD.print(sensors.rawOvershootSensorValue(0));
-    //     SERIALD.println(sensors.rawOvershootSensorValue(1));
-    // }
-    // SERIALD.println("-");
-    // SERIALD.println(sensors.readOvershootSensors());
-    // SERIALD.println("-");
-    // while (sensors.readOvershootSensors()) {
-    //     SERIALD.print(sensors.rawOvershootSensorValue(0));
-    //     SERIALD.println(sensors.rawOvershootSensorValue(1));
-    // }
+    sensors.waitForOvershoot();
 
     //turning
     motors.setLeftDirection(Motor::FRONT);
@@ -326,10 +268,10 @@ void JunctionControl::turnRight() {
 
     do
     {
-        updateState();
+        updateState();  
         SERIALD.print("right");
-    } while (!(CFState == 1 && (backSensorStateInverted & 0b00010000) == 0b00010000 ));
+    } while (!((backSensorStateInverted & 0b00010000) == 0b00010000) );
     
-    sensors.increaseJunction(sensors.overshootRightPin);
+    sensors.addRightOvershoot();
 }
 #endif

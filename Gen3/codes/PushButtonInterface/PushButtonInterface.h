@@ -3,7 +3,7 @@
 
 #ifndef NUMBER_PUSHBUTTONS
 #define NUMBER_PUSHBUTTONS 2
-#define PUSHBUTTON_PINS {2, 50}
+#define PUSHBUTTON_PINS {50, 2}
 #endif
 
 class PushButtonInterface {

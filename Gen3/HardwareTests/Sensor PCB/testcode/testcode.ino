@@ -118,20 +118,16 @@ void testLineDetectionLoop() {
     SERIALD.println(sensors.readLine());
 }
 
-void testBackSetup() {
+void testRearSensorSetup() {
     commonSetup();
     sensors.calibrate();
+    sensors.printCalibratedInfo();
+    PushButtonInterface::waitForButton(0);
 }
 
-void testBackLoop() {
-    SERIALD.print(sensors.rawOvershootSensorValue(0));
-    SERIALD.print(" ");
-    SERIALD.print(sensors.rawOvershootSensorValue(1));
-    SERIALD.print(" | ");
-    sensors.readSensorsAnalog();
-    sensors.convertAnalogToDigital();
-    sensors.printDigitalValues();
+void testRearSensorLoop() {
+    SERIALD.println(sensors.readRearSensors(), 2);
 }
 
 ////////////////////////////////////RUN TEST/////////////////////////////////////
-TEST(testBack)
+TEST(testRearSensor)
