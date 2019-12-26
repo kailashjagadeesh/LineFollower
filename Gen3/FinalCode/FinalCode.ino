@@ -2,8 +2,8 @@
 #define BLACKLINE_LOGIC
 #define SERIALD bluetooth
 #define PID_CONVFACTOR 100
-#define NUM_PIDSENSORS 9
-#define PID_IDEAL 4000
+#define NUM_PIDSENSORS 5
+#define PID_IDEAL 2000
 
 //dependencies
 #include "softwareSerial.h"

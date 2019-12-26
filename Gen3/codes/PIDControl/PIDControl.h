@@ -33,13 +33,13 @@ PIDControl::PIDControl(uint16_t _targetValue)
     kd = parameters + 1;
     ki = parameters + 2;
 
-    parameters[0] = 7; // Hard coded PID values
-    parameters[1] = 7;
+    parameters[0] = 9; // Hard coded PID values
+    parameters[1] = 6;
     parameters[2] = 0.00;
 
     //for sharp turns
-    parameters[3] = 15;
-    parameters[4] = 7;
+    parameters[3] = parameters[0];
+    parameters[4] = parameters[1];
     parameters[5] = 0;
 
     dp[0] = 1.00;
@@ -53,7 +53,6 @@ int16_t PIDControl::control(int16_t currentValue)
     float error = currentValue / PID_CONVFACTOR - targetValue;
     //errorSum += error;
     errorSum = error + lastError;
-
     if (abs(error) > 1000/PID_CONVFACTOR) {
         LED::write(0, HIGH);
         c = (*(kp+3)) * error + (*(kd+3)) * (error - lastError) + (*(ki+3)) * errorSum;

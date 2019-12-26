@@ -145,13 +145,19 @@ void JunctionControl::detect()
     {
         control(LS);
     }
+    else if ((CFState == 0) && ((backSensorState & 0b11000101) == 0b11000100 )) {
+        control(T);
+    }
+    else if ((CFState == 0) && ((backSensorStateInverted & 0b11000101) == 0b11000100 )) {
+        control(T);
+    }
     // //90 degree right
-    else if ((CFState == 0) && ((backSensorState & 0b11100011) == 0b11))
+    else if ((CFState == 0) && (backSensorState <= 0b111) && backSensorState > 0)
     {
         control(R);
     }
     // //90 degrees left
-    else if ((CFState == 0) && ((backSensorStateInverted & 0b11100011) == 0b11))
+    else if ((CFState == 0) && (backSensorStateInverted <= 0b111) && backSensorStateInverted > 0) 
     {
         control(L);
     }
@@ -190,7 +196,6 @@ void JunctionControl::control(Junction j)
                 motors.setLeftDirection(Motor::FRONT);
                 motors.setRightDirection(Motor::FRONT);
 
-                sensors.waitForOvershoot();
                 delay(MOTOR_JUNCTION_DELAY);
 
                 motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED/1.3);

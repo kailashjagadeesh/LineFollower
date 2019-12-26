@@ -160,8 +160,8 @@ void Sensors::overshootControl() {
     uint8_t prevLeft = overshootData.prevState & 0b10;
     uint8_t prevRight = overshootData.prevState & 0b01;
 
-    if (((overshootData.nextOvershoot() == overshootData.left) && (prevLeft - currentLeft > 0))
-        || ((overshootData.nextOvershoot() == overshootData.right) && (prevRight - currentRight > 0))) {
+    if (((overshootData.nextOvershoot() == overshootData.left) && (prevLeft - currentLeft < 0))
+        || ((overshootData.nextOvershoot() == overshootData.right) && (prevRight - currentRight < 0))) {
         overshootData.pop();
     } 
 
