@@ -14,7 +14,7 @@ namespace AsyncUltrasonic {
     extern volatile int _distance;
     extern volatile int _distanceCount;
 
-    extern int calibratedDistance;
+    extern int minimumDistance;
     extern bool _calibrated;
 
     extern Timer timer;
@@ -26,8 +26,6 @@ namespace AsyncUltrasonic {
 
     void updateDistance(uint32_t);
     void update();
-
-    void calibrate();
 
     bool detectBlock();
 }

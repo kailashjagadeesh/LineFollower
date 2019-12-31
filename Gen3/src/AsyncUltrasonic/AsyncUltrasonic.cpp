@@ -14,7 +14,7 @@ volatile int AsyncUltrasonic::distance = 0;
 volatile int AsyncUltrasonic::_distance;
 volatile int AsyncUltrasonic::_distanceCount;
 Timer AsyncUltrasonic::timer;
-int AsyncUltrasonic::calibratedDistance;
+int AsyncUltrasonic::minimumDistance;
 bool AsyncUltrasonic::_calibrated = false;
 
 void AsyncUltrasonic::init(int t, int e) {
@@ -25,7 +25,7 @@ void AsyncUltrasonic::init(int t, int e) {
     digitalWrite(trigPin, LOW);
 
     attachInterrupt(echoPin, _interruptHandle, CHANGE);
-    timer.every(100, trigger);
+    timer.every(10, trigger);
 }
 
 void AsyncUltrasonic::_interruptHandle() {
@@ -50,9 +50,6 @@ void AsyncUltrasonic::update() {
 }
 
 bool AsyncUltrasonic::detectBlock() {
-    return _calibrated && (distance < calibratedDistance);
+    return (distance <= minimumDistance) && distance;
 }
 
-void AsyncUltrasonic::calibrate() {
-    //TODO
-}
