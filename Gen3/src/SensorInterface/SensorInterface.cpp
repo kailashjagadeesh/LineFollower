@@ -29,7 +29,7 @@ const uint8_t Sensors::centerRearPin = REAR_CENTER_PIN;
 
 ///overshoot handling
 bool Sensors::overshootCompleted() {
-    return (overshootData.index == -1);
+    return (overshootData.empty());
 }
 
 void Sensors::addLeftOvershoot() {
@@ -46,7 +46,20 @@ void Sensors::waitForOvershoot() {
     }
 }
 
-void Sensors::overshootControl() {
+void Sensors::updateAllSensors () {
+    readSensors();
+    convertAnalogToDigital();
+}
+
+void Sensors::printAllSensors() {
+    Debug::print(digitalValues, 2);
+    Debug::print(" | ");
+    Debug::print(readRearSensors(), 2);
+    Debug::print(" | ");
+    Debug::print((int)(rearCenterStatus()), 2);
+}
+
+void Sensors::overshootControl(bool debug) {
     uint8_t currentState = readRearSensors();
     uint8_t currentLeft = currentState & 0b10;
     uint8_t currentRight = currentState & 0b01;
@@ -54,10 +67,18 @@ void Sensors::overshootControl() {
     uint8_t prevLeft = overshootData.prevState & 0b10;
     uint8_t prevRight = overshootData.prevState & 0b01;
 
-    if (((overshootData.nextOvershoot() == overshootData.left) && (prevLeft - currentLeft < 0))
-        || ((overshootData.nextOvershoot() == overshootData.right) && (prevRight - currentRight < 0))) {
+    if (((overshootData.nextOvershoot() == overshootData.left) && (currentLeft) && !(prevLeft))
+        || ((overshootData.nextOvershoot() == overshootData.right) && currentRight && !prevRight)) {
         overshootData.pop();
     } 
+
+    if (debug) {
+        Debug::print("    >");
+        if (overshootData.front != -1)
+            Debug::println(overshootData.back-overshootData.front + 1);
+        else 
+            Debug::println(0);
+    }
 
     overshootData.prevState = currentState;
 }
@@ -240,6 +261,7 @@ void Sensors::convertAnalogToDigital()
         }
     }
 
+    onBoardCenterPin = digitalValues & 0b000010000;
     readCenterSensors();
 }
 
@@ -255,6 +277,9 @@ Sensors::Sensors()
     for (int i = 0; i < NUM_SENSOR_CENTER_PINS; i++) {
         pinMode(sensorCenterPins[i], INPUT);
     }
+
+    overshootData.front = overshootData.back = -1;
+    overshootData.prevState = 0;
 }
 
 void Sensors::readSensorsAnalog()

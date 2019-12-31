@@ -2,6 +2,7 @@
 #define SENSOR_INTERFACE_H
 
 #include <stdint.h>
+#include "../LEDInterface/LEDInterface.h"
 
 class Sensors
 {
@@ -15,8 +16,9 @@ class Sensors
     static const uint8_t centerRearPin;
 
     struct {
-        int overshoots[2];
-        int index = -1;
+        int overshoots[3];
+        int back = -1;
+        int front = -1;
 
         int left = 0;
         int right = 1;
@@ -24,20 +26,30 @@ class Sensors
         uint8_t prevState = 0;
 
         int nextOvershoot() {
-            return overshoots[0];
+            return overshoots[front];
         }
 
         void push(int d) {
-            index++;
-            overshoots[index] = d;
+            back ++;
+            overshoots[back] = d;
+            if (front == -1)    
+                front = 0;
+            LED::toggle(1);
         }
 
         void pop() {
-            if (index >= 0) {
-                index --;
-                overshoots[index] = overshoots[index+1];
-                overshoots[index+1] = 0;
+            if (front != -1)
+                overshoots[front] = -1;
+            if (front == back) {
+                front = back = -1;
             }
+            else 
+                front++;
+            LED::toggle(0);
+        }
+
+        bool empty() {
+            return (front == -1);
         }
     } overshootData;
 
@@ -56,6 +68,8 @@ public:
     {
         uint16_t thresholdValues[12];
     } calibratedValues;
+
+    bool onBoardCenterPin;
    
    //digital pin outputs
     uint16_t digitalReadings[12];
@@ -93,13 +107,15 @@ public:
     void printDigitalReadings();
     //print digitalValues
     void printDigitalValues();
+    void updateAllSensors();
+    void printAllSensors();
 
     ///overshoot interface
     bool overshootCompleted();
     void addLeftOvershoot();
     void addRightOvershoot();
     void waitForOvershoot();
-    void overshootControl();
+    void overshootControl(bool debug = false);
 
 };
 
