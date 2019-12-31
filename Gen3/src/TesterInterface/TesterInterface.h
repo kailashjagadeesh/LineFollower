@@ -3,6 +3,12 @@
 #include <Arduino.h>
 #include "../BluetoothInterface/BluetoothInterface.h"
 
+#ifndef VERBOSE_DEBUG
+#define VERBOSE_DEBUG true
+#endif 
+
+#define VD(x) if (VERBOSE_DEBUG) {x};
+
 
 #define TEST(s) \
     void setup() { \
@@ -25,6 +31,8 @@ class Debug {
 
     static void print(const char* );
     static void println(const char* );
+    static void print(char* );
+    static void println(char* );
 
     static void print(float);
     static void println(float);
