@@ -15,12 +15,15 @@ Sensors sensors;
 Motor motors;
 MotorPIDControl pid(PID_IDEAL, 255, motors);
 JunctionControl junctionControl(sensors, motors, pid);
+volatile bool paused;
+
 
 void setup()
 {
     Debug::begin();
     Debug::useBluetooth();
     LED::init();
+    paused = false;
 
     AsyncUltrasonic::init();
     AsyncUltrasonic::minimumDistance = ULTRASONIC_MIN_DISTANCE;
@@ -32,42 +35,6 @@ void setup()
     motors.stopMotors();
     motors.setLeftDirection(Motor::FRONT);
     motors.setRightDirection(Motor::FRONT);
-
-    /*PID TESTING ROUTINE
-    Debug::println("Set P values");
-    while (!PushButtonInterface::read(1)) {
-        Debug::print("Current P:");
-        Debug::println((float)(pid.parameters[0]));
-        if (PushButtonInterface::read(0)) {
-            pid.parameters[0] ++;
-            delay(1000);
-        }
-    }
-    delay(1000);
-    /**/
-    /*
-    Debug::println("Set D values");
-    while (!PushButtonInterface::read(1)) {
-        Debug::print("Current D:");
-        Debug::println((float)(pid.parameters[1]));
-        if (PushButtonInterface::read(0)) {
-            pid.parameters[1] +=1;
-            delay(1000);
-        }
-    }
-    delay(1000);
-    /**
-    while (!PushButtonInterface::read(1)) {
-        Debug::print("Current I:");
-        Debug::println((float)(pid.parameters[2]));
-        if (PushButtonInterface::read(0)) {
-            pid.parameters[2] +=0.1;
-            delay(1000);
-        }
-    }
-    delay(1000);
-    /**/
-
     
     while (1) {
         if (PushButtonInterface::read(1)) {
@@ -99,10 +66,22 @@ void setup()
 void loop()
 {
     AsyncUltrasonic::update();
-    if (PushButtonInterface::read(0))
-    {
+
+    if (PushButtonInterface::read(0)) {
+        //paused 
+        LED::write(0, HIGH);
+        Debug::println("---------------paused----------------");
         motors.stopMotors();
-        PushButtonInterface::waitForButton(1);
+        delay(1000);
+        while (!PushButtonInterface::read(0)) {
+            if (PushButtonInterface::read(1)){
+                junctionControl.removeJunction();
+                LED::toggle(0);
+                delay(500);
+            }
+        }
+        delay(500);
+        LED::write(0, LOW);
     }
 
     int16_t correction = pid.control(sensors.readLine());

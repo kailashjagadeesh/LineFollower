@@ -34,7 +34,6 @@ class Sensors
             overshoots[back] = d;
             if (front == -1)    
                 front = 0;
-            LED::toggle(1);
         }
 
         void pop() {
@@ -45,7 +44,6 @@ class Sensors
             }
             else 
                 front++;
-            LED::toggle(0);
         }
 
         bool empty() {

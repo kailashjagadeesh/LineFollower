@@ -89,6 +89,7 @@ public:
     void pause(uint32_t m = 100);
     void setAlgorithm(Algorithm);
     void addPathChoice(const char*);
+    void removeJunction();
 };
 
 #endif

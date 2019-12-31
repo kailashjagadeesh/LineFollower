@@ -55,6 +55,7 @@ void JunctionControl::setAlgorithm(Algorithm algo) {
 
 void JunctionControl::addPathChoice(const char* choice) {
     strcat(path, choice);
+    LED::toggle(1);
 }
 
 void JunctionControl::updateState()
@@ -157,7 +158,7 @@ void JunctionControl::detect()
 
 void JunctionControl::control(Junction j)
 {
-    Debug::print(junctionNames[j]);
+    Debug::println(path);
 //*
     if (mode == DRY_RUN) {
         if (algorithm == LEFT_LOGIC)
@@ -186,19 +187,10 @@ void JunctionControl::control(Junction j)
                     Solver::solve(path, algorithm);
                     Debug::println(path);
 
-                    Timer t;
-                    int8_t id = t.oscillate(LED_PIN_RED, 500, LOW);
-                    while (1) {
-                        t.update();
-
-                        if (PushButtonInterface::read(0)) {
-                            break;
-                        }
-                    }
-                    
-                    t.stop(id);
+                
                     LED::write(0, HIGH);
-                    LED::write(1, HIGH);
+                    PushButtonInterface::waitForButton(0);
+
                     mode = ACTUAL_RUN;
                     break;
                 }
@@ -237,19 +229,9 @@ void JunctionControl::control(Junction j)
                     Solver::solve(path, algorithm);
                     Debug::println(path);
                     
-                    Timer t;
-                    int8_t id = t.oscillate(LED_PIN_RED, 500, LOW);
-                    while (1) {
-                        t.update();
-
-                        if (PushButtonInterface::read(0)) {
-                            break;
-                        }
-                    }
-                    
-                    t.stop(id);
                     LED::write(0, HIGH);
-                    LED::write(1, HIGH);
+                    PushButtonInterface::waitForButton(0);
+
                     mode = ACTUAL_RUN;
                     break;
                 }
@@ -340,26 +322,32 @@ void JunctionControl::turnAroundForBlock() {
     motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED / 1.3);
     motors.setRightSpeed(MOTOR_EXCESS_TURN_SPEED / 1.3);
 
-    LED::write(0, HIGH);
-    delay(750);
-    while (sensors.rearCenterStatus());
-    LED::write(1, HIGH);
-    while (!sensors.rearCenterStatus());
-    LED::write(0, LOW);
+    uint32_t time;
+    // while ((sensors.rearCenterStatus()));
+    // while (sensors.readRearSensors() & 0b01!= 0b1);
+    // while (!(sensors.rearCenterStatus()));
+
+    do {
+        updateState();
+    } while (CFState == 1);
+
+    do {
+        updateState();
+    } while (CFState == 0);
 
     motors.setRightDirection(Motor::BACK);
     motors.setLeftDirection(Motor::BACK);
     motors.setLeftSpeed(MOTOR_OVERSHOOT_SPEED);
     motors.setRightSpeed(MOTOR_OVERSHOOT_SPEED);
 
+    time = millis();
     while(CFState != 1) {
         updateState();
     }
 
-    LED::write(1, LOW);
+    while (millis() - time < BLOCK_REVERSE_DELAY);
 
     AsyncUltrasonic::distance = 0;
-    delay(BLOCK_REVERSE_DELAY);
     pid.increasePID();
 }
 
@@ -486,4 +474,14 @@ bool JunctionControl::turnRight() {
         sensors.addRightOvershoot();
     pid.increasePID();
     return true;
+}
+
+void JunctionControl::removeJunction() {
+    if (mode == DRY_RUN) {
+        if (strlen(path) > 0)
+            path[strlen(path) - 1] = 0;
+    }
+    else {
+        currentJunction = 0;
+    }
 }
