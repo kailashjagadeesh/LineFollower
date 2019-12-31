@@ -7,8 +7,12 @@
 
 class PIDControl
 {
+    protected:
     float targetValue;
-    float errorSum, lastError;
+    float lastError;
+    double errorSum;
+    uint32_t increaseTime;
+    bool tuning;
 
 public:
     double *kp, *kd, *ki;
@@ -17,6 +21,7 @@ public:
     float getError(int16_t currentValue);
     int16_t control(int16_t currentValue);
     void clear();
+    void increasePID(uint32_t m = 200);
 };
 
 class MotorPIDControl : public PIDControl
@@ -32,5 +37,7 @@ public:
     void setSpeedBasedOnCorrection(int16_t correction);
     void setBaseSpeed(uint8_t speed);
 };
+
+void autoTunePID(MotorPIDControl& pid);
 
 #endif

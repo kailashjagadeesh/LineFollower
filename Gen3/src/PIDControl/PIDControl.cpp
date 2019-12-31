@@ -4,6 +4,7 @@
 #include "../MotorDriverInterface/MotorDriverInterface.h"
 #include "../LEDInterface/LEDInterface.h"
 #include "../configure.h"
+#include "../TesterInterface/TesterInterface.h"
 
 #ifndef KP
 #define KP 1
@@ -17,8 +18,24 @@
 #define KI 1
 #endif
 
+#ifndef KP2
+#define KP2 1
+#endif
+
+#ifndef KD2
+#define KD2 1
+#endif
+
+#ifndef KI2
+#define KI2 1
+#endif
+
 #ifndef PID_CONVFACTOR
 #define PID_CONVFACTOR 1
+#endif
+
+#ifndef PID_THRESHOLD
+#define PID_THRESHOLD 1
 #endif
 
 PIDControl::PIDControl(uint16_t _targetValue)
@@ -37,37 +54,53 @@ PIDControl::PIDControl(uint16_t _targetValue)
     parameters[2] = KI;
 
     //for sharp turns
-    parameters[3] = parameters[0];
-    parameters[4] = parameters[1];
-    parameters[5] = 0;
+    parameters[3] = KP2;
+    parameters[4] = KD2;
+    parameters[5] = KI2;
 
-    dp[0] = 1.00;
-    dp[1] = 1.00;
+    tuning = true;
+
+    dp[0] = 3;
+    dp[1] = 4;
     dp[2] = 0.00;
+
+    increaseTime = 0;
 }
 
 int16_t PIDControl::control(int16_t currentValue)
 {
     int16_t c; //correction
     float error = currentValue / PID_CONVFACTOR - targetValue;
-    //errorSum += error;
     errorSum = error + lastError;
-    if (abs(error) > 1000/PID_CONVFACTOR) {
-        LED::write(0, HIGH);
-        c = (*(kp+3)) * error + (*(kd+3)) * (error - lastError) + (*(ki+3)) * errorSum;
-    }
-    else {
-        LED::write(0, LOW);
-        c = (*kp) * error + (*kd) * (error - lastError) + (*ki) * errorSum;    
-    }
-
     lastError = error;
+
+
+    // if (abs(error) <= PID_THRESHOLD)
+    float P = (*kp) * error;
+    float D =(*kd) * (error - lastError);
+    float I = (*ki) * errorSum;
+    c = P + D + I;  
+        // if (abs(error) >= PID_THRESHOLD)
+        //     errorSum = 0;  
+    // else {
+    //     c = (*(kp+3)) * error + (*(kd+3)) * (error - lastError) + (*(ki+3)) * errorSum;
+    //     Debug::print("-");
+    //     errorSum = 0;
+    // }  
+
+    if (millis() < increaseTime) {
+        c = (*(kp+3)) * error + (*(kd+3)) * (error - lastError) + (*(ki+3)) * errorSum;   
+    }
     return c;
 }
 
 float PIDControl::getError(int16_t currentValue)
 {
     return currentValue / PID_CONVFACTOR - targetValue;
+}
+
+void PIDControl::increasePID(uint32_t m) {
+    increaseTime = m + millis();
 }
 
 void PIDControl::clear()
@@ -78,6 +111,7 @@ void PIDControl::clear()
 
 void MotorPIDControl::setBaseSpeed(uint8_t speed)  {
     baseSpeed = speed;
+    errorSum = 0;
 }
 
 
@@ -98,3 +132,4 @@ void MotorPIDControl::setSpeedBasedOnCorrection(int16_t correction) {
         motors.setLeftSpeed(newSpeed);
     }
 }
+
