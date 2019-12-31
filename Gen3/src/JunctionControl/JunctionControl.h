@@ -2,10 +2,10 @@
 #define JUNCTION_CONTROL_H
 
 #include "../SensorInterface/SensorInterface.h"
-#include "../UltrasonicInterface/UltrasonicInterface.h"
 #include "../PushButtonInterface/PushButtonInterface.h"
 #include "../MotorDriverInterface/MotorDriverInterface.h"
 #include "../PIDControl/PIDControl.h"
+#include "../Solver/Solver.h"
 
 #include <stdint.h>
 
@@ -66,7 +66,6 @@ class JunctionControl
     uint8_t backSensorStateInverted;
 
     Sensors &sensors;
-    Ultrasonic &ultrasonic;
     Motor &motors;
     MotorPIDControl &pid;
 
@@ -75,15 +74,21 @@ class JunctionControl
 
     bool turnLeft();
     bool turnRight();
+    void turnAroundForBlock();
+    void turnAroundForEnd();
 
     uint32_t paused;
+    char path[100];
+    int currentJunction;
 
 public:
     void updateState();
     void detect();
     void control(Junction);
-    JunctionControl(Sensors &_sensors, Ultrasonic &_ultrasonic, Motor &_motors, MotorPIDControl&);
+    JunctionControl(Sensors &_sensors, Motor &_motors, MotorPIDControl&);
     void pause(uint32_t m = 100);
+    void setAlgorithm(Algorithm);
+    void addPathChoice(const char*);
 };
 
 #endif
