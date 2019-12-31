@@ -8,7 +8,7 @@
 #endif 
 
 #ifndef PUSHBUTTON_PINS
-#define PUSHBUTTON_PINS {50, 2}
+#define PUSHBUTTON_PINS {2,50}
 #endif
 
 const int PushButtonInterface::nPins = NUMBER_PUSHBUTTONS;
