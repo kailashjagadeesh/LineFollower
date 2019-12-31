@@ -28,7 +28,7 @@ void setup()
     AsyncUltrasonic::init();
     AsyncUltrasonic::minimumDistance = ULTRASONIC_MIN_DISTANCE;
 
-    Debug::println("Meshmerize Finale!");
+    Debug::println("Meshmerize Finale Winner!");
 
     Debug::println("Calibration");
     sensors.calibrate();

@@ -90,36 +90,32 @@ const uint8_t Sensors::sensorCenterPins[12] = SENSOR_CENTER_PINS;
 
 uint8_t Sensors::readRearSensors() {
     rearSensorStatus = 0;
-#ifndef WHITELINE_LOGIC
+
     if (1023 - analogRead(analogPins[9]) < calibratedValues.thresholdValues[9])
         rearSensorStatus |= 0b10;
     if (1023 - analogRead(analogPins[10]) < calibratedValues.thresholdValues[10]) 
         rearSensorStatus |= 0b01;
-#else
-    if (analogRead(analogPins[9]) < calibratedValues.thresholdValues[9])
-        rearSensorStatus |= 0b10;
-    if (analogRead(analogPins[10] < calibratedValues.thresholdValues[10])) 
-        rearSensorStatus |= 0b01;
+
+#ifdef WHITELINE_LOGIC
+    rearSensorStatus = (1 << 2) - rearSensorStatus - 1;
 #endif
 
 return rearSensorStatus;
 }
 
 bool Sensors::rearCenterStatus() {
-#ifndef WHITELINE_LOGIC
-    return (1023 - analogRead(centerRearPin) < calibratedValues.thresholdValues[11]);
+    bool value = (1023 - analogRead(centerRearPin) < calibratedValues.thresholdValues[11]);
+#ifndef WHITELINE_LOGIC 
+    return value;
 #else 
-    return (analogRead(centerRearPin) < calibratedValues.thresholdValues[11]);
+    return !value;
 #endif
+
 }
 
 void Sensors::readCenterSensors() {
     for (int i = 0; i < NUM_SENSOR_CENTER_PINS; ++i)
-    #ifdef WHITELINE_LOGIC
-        digitalValues |= (!digitalRead(sensorCenterPins[i]) << (NUM_SENSORS/2));
-    #else 
         digitalValues |= (digitalRead(sensorCenterPins[i]) << (NUM_SENSORS/2));
-    #endif
 }
 
 void Sensors::printDigitalValues()
@@ -263,6 +259,10 @@ void Sensors::convertAnalogToDigital()
 
     onBoardCenterPin = digitalValues & 0b000010000;
     readCenterSensors();
+
+#ifdef WHITELINE_LOGIC
+    digitalValues = (1<<9) - digitalValues - 1;
+#endif
 }
 
 Sensors::Sensors()
@@ -286,11 +286,7 @@ void Sensors::readSensorsAnalog()
 {
     for (int i = 0; i < NUM_SENSORS + 3; i++)
     {
-#ifdef WHITELINE_LOGIC
-        analogReadings[i] = analogRead(analogPins[i]);
-#else
         analogReadings[i] = 1023 - analogRead(analogPins[i]);
-#endif
     }
 }
 // CF pin must be indexed 8th(count from 0)
@@ -298,27 +294,27 @@ void Sensors::readSensorsDigital()
 {
     for (int i = 0; i < NUM_SENSORS; i++)
     {
-#ifdef WHITELINE_LOGIC
-        digitalReadings[i] = digitalRead(digitalPins[i]);
-#else
         digitalReadings[i] = !digitalRead(digitalPins[i]);
-#endif
-    
     }
+
+#ifdef WHITELINE_LOGIC 
+    for (int i = 0; i < NUM_SENSORS; ++i)
+        digitalReadings[i] = !digitalReadings[i];
+#endif
 }
 
 void Sensors::readSensors()
 {
     for (int i = 0; i < NUM_SENSORS + 3; i++)
     {
-#ifdef WHITELINE_LOGIC
-        digitalReadings[i] = digitalRead(digitalPins[i]);
-        analogReadings[i] = analogRead(analogPins[i]);
-#else
         digitalReadings[i] = !digitalRead(digitalPins[i]);
         analogReadings[i] = 1023 - analogRead(analogPins[i]);
-#endif
     }
+
+#ifdef WHITELINE_LOGIC
+    for (int i = 0; i < NUM_SENSORS+3; ++i)
+        digitalReadings[i] = !digitalReadings[i];
+#endif
 } 
 
 //Reads the sensor analog values and returns the position of the line

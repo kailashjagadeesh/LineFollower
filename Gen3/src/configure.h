@@ -1,4 +1,4 @@
-#define BLACKLINE_LOGIC
+#define WHITELINE_LOGIC
 #define LED_PINS {14, 15}
 #define PID_CONVFACTOR 100
 #define NUM_PIDSENSORS 5
