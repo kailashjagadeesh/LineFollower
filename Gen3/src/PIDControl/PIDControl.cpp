@@ -116,8 +116,11 @@ void MotorPIDControl::setBaseSpeed(uint8_t speed)  {
 
 
 void MotorPIDControl::setSpeedBasedOnCorrection(int16_t correction) {
-    if (baseSpeed < 255) {
-        baseSpeed ++;
+    if (baseSpeed < 250) {
+        baseSpeed += 5;
+    }
+    else {
+        baseSpeed = 255;
     }
 
     uint8_t newSpeed = baseSpeed;

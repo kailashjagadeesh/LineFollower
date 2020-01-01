@@ -115,7 +115,11 @@ bool Sensors::rearCenterStatus() {
 
 void Sensors::readCenterSensors() {
     for (int i = 0; i < NUM_SENSOR_CENTER_PINS; ++i)
+    #ifndef WHITELINE_LOGIC
         digitalValues |= (digitalRead(sensorCenterPins[i]) << (NUM_SENSORS/2));
+    #else
+        digitalValues |= (!digitalRead(sensorCenterPins[i]) << (NUM_SENSORS/2));
+    #endif
 }
 
 void Sensors::printDigitalValues()
@@ -262,6 +266,8 @@ void Sensors::convertAnalogToDigital()
 
 #ifdef WHITELINE_LOGIC
     digitalValues = (1<<9) - digitalValues - 1;
+    readCenterSensors();
+    nSensorsOnLine = NUM_SENSORS - nSensorsOnLine;
 #endif
 }
 
