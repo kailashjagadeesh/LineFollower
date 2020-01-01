@@ -114,6 +114,7 @@ public:
     void addRightOvershoot();
     void waitForOvershoot();
     void overshootControl(bool debug = false);
+    void clearOvershoots();
 
 };
 

@@ -80,6 +80,8 @@ class JunctionControl
     uint32_t paused;
     char path[100];
     int currentJunction;
+    uint32_t lastJunctionTime;
+    Junction prevJunction;
 
 public:
     void updateState();

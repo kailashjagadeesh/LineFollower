@@ -122,6 +122,10 @@ void Sensors::readCenterSensors() {
     #endif
 }
 
+void Sensors::clearOvershoots() {
+    overshootData.front = overshootData.back = -1;
+}
+
 void Sensors::printDigitalValues()
 {
     Debug::print("Converted values: ");
