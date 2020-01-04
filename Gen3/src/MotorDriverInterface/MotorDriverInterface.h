@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 //change A with B to swap left and right motors
-#define LEFTMOTOR_A
+#define LEFTMOTOR_B
 
 class Motor {
     //pin definitions

@@ -11,14 +11,14 @@ Motor motors;
 void setup() {
     Debug::begin();
     Debug::useBluetooth();
-    /*Sensor test*/
+    /*Sensor test
     AsyncUltrasonic::init();
     AsyncUltrasonic::minimumDistance = ULTRASONIC_MIN_DISTANCE;
 
     sensors.calibrate();
     /**/
 
-   /* MOTOR TEST 
+   /* MOTOR TEST */
     motors.stopMotors();
     PushButtonInterface::waitForButton(0);
     /**/
@@ -26,7 +26,7 @@ void setup() {
 }
 
 void loop() { 
-    /* Sensor test */ 
+    /* Sensor test 
     Debug::print(AsyncUltrasonic::distance);
     Debug::print(" | ");
     Debug::print((int)(AsyncUltrasonic::detectBlock()));
@@ -40,7 +40,7 @@ void loop() {
 
     /**/
 
-    /* MOTOR TEST 
+    /* MOTOR TEST */
 
     motors.setLeftDirection(Motor::FRONT);
     motors.setRightDirection(Motor::FRONT);

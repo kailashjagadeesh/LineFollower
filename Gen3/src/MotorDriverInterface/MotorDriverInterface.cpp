@@ -40,7 +40,10 @@ void Motor::stopMotors() {
 //setLeftSpeed(speed: the speed to be set : 0 <= speed <= 255)
 void Motor::setLeftSpeed(uint8_t speed)
 {
+    // unit8_t speedCorrection = 0;
     if (enabled)
+        // if  (speed > 55) analogWrite(leftSpeed, speed - 55);
+        // else analogWrite(leftSpeed, 0);
         analogWrite(leftSpeed, speed);
 }
 

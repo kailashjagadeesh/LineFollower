@@ -179,8 +179,8 @@ void JunctionControl::control(Junction j)
                         motors.setLeftDirection(Motor::FRONT);
                         motors.setRightDirection(Motor::BACK);
 
-                        motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED);
-                        motors.setRightSpeed(MOTOR_EXCESS_TURN_SPEED);
+                        motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED / 1.3);
+                        motors.setRightSpeed(MOTOR_EXCESS_TURN_SPEED / 1.3);
 
                         do {
                             updateState();
@@ -289,8 +289,8 @@ void JunctionControl::control(Junction j)
                     motors.setLeftDirection(Motor::BACK);
                     motors.setRightDirection(Motor::FRONT);
 
-                    motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED);
-                    motors.setRightSpeed(MOTOR_EXCESS_TURN_SPEED);
+                    motors.setLeftSpeed(MOTOR_EXCESS_TURN_SPEED / 1.3);
+                    motors.setRightSpeed(MOTOR_EXCESS_TURN_SPEED / 1.3);
 
                     do {
                         updateState();

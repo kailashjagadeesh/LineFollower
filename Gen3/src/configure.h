@@ -4,8 +4,8 @@
 #define NUM_PIDSENSORS 5
 #define PID_IDEAL 2000
 
-#define KP 9
-#define KD 23
+#define KP 8
+#define KD 15
 #define KI 0.1
 
 #define KP2 17
@@ -26,7 +26,7 @@
 
 #define MOTOR_EXCESS_TURN_SPEED 180
 #define POST_JUNCTION_BASE_SPEED 180
-#define MOTOR_OVERSHOOT_SPEED 180
+#define MOTOR_OVERSHOOT_SPEED 150
 #define MIN_OVERSHOOT_TIME 200
 #define MIN_TURN_TIME 400
 
